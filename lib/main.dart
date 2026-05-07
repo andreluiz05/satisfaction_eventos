@@ -50,18 +50,65 @@ class SatisfactionApp extends StatelessWidget {
   }
 }
 
+enum PresencaStatus { none, accepted, refused }
+
 class Convidado {
   String id, nome, email;
-  bool presenca;
-  Convidado({required this.id, required this.nome, required this.email, this.presenca = false});
+  PresencaStatus status;
+  Convidado({required this.id, required this.nome, required this.email, this.status = PresencaStatus.none});
 
   String get iniciais => nome.trim().split(RegExp(' +')).map((s) => s.isNotEmpty ? s[0] : '').take(2).join().toUpperCase();
 
-  Map<String, dynamic> toJson() => {'id': id, 'nome': nome, 'email': email, 'presenca': presenca};
+  PresencaStatus get nextStatus {
+    switch (status) {
+      case PresencaStatus.none:
+        return PresencaStatus.accepted;
+      case PresencaStatus.accepted:
+        return PresencaStatus.refused;
+      case PresencaStatus.refused:
+        return PresencaStatus.none;
+    }
+  }
+
+  String get statusLabel {
+    switch (status) {
+      case PresencaStatus.accepted:
+        return 'ACEITO';
+      case PresencaStatus.refused:
+        return 'RECUSADO';
+      case PresencaStatus.none:
+        return 'SEM STATUS';
+    }
+  }
+
+  Map<String, dynamic> toJson() => {
+    'id': id,
+    'nome': nome,
+    'email': email,
+    'status': status.name,
+  };
   
   factory Convidado.fromJson(Map<String, dynamic> json) => Convidado(
-    id: json['id'], nome: json['nome'], email: json['email'], presenca: json['presenca'] ?? false,
+    id: json['id'],
+    nome: json['nome'],
+    email: json['email'],
+    status: _parseStatus(json) ?? PresencaStatus.none,
   );
+
+  static PresencaStatus? _parseStatus(Map<String, dynamic> json) {
+    final statusValue = json['status'];
+    if (statusValue is String && statusValue.isNotEmpty) {
+      return PresencaStatus.values.firstWhere(
+        (value) => value.name == statusValue,
+        orElse: () => PresencaStatus.none,
+      );
+    }
+    final presencaValue = json['presenca'];
+    if (presencaValue is bool) {
+      return presencaValue ? PresencaStatus.accepted : PresencaStatus.refused;
+    }
+    return PresencaStatus.none;
+  }
 }
 
 class Evento {
@@ -104,11 +151,11 @@ class SatisfactionController extends ChangeNotifier {
         _eventos.addAll(decoded.map((e) => Evento.fromJson(e)).toList());
       } else {
         _eventos.add(Evento(id: '1', nome: 'Apresentação AV2', local: 'Laboratório TI - Bloco B', data: '20/05/2026', horario: '19:00', convidados: [
-          Convidado(id: 'c1', nome: 'Ênio', email: 'enio@uninassau.com', presenca: true),
-          Convidado(id: 'c2', nome: 'Camila', email: 'camila@uninassau.com', presenca: false),
-          Convidado(id: 'c3', nome: 'Miguel', email: 'miguel@email.com', presenca: true),
-          Convidado(id: 'c4', nome: 'Aquiles', email: 'aquiles@uninassau.com', presenca: false),
-          Convidado(id: 'c5', nome: 'Rian', email: 'rian@uninassau.com', presenca: true),
+          Convidado(id: 'c1', nome: 'Ênio', email: 'enio@uninassau.com', status: PresencaStatus.accepted),
+          Convidado(id: 'c2', nome: 'Camila', email: 'camila@uninassau.com', status: PresencaStatus.accepted),
+          Convidado(id: 'c3', nome: 'Miguel', email: 'miguel@email.com', status: PresencaStatus.refused),
+          Convidado(id: 'c4', nome: 'Aquiles', email: 'aquiles@uninassau.com', status: PresencaStatus.refused),
+          Convidado(id: 'c5', nome: 'Rian', email: 'rian@uninassau.com', status: PresencaStatus.accepted),
         ]));
         await _salvarCache();
       }
@@ -159,13 +206,13 @@ class SatisfactionController extends ChangeNotifier {
     notifyListeners();
   }
 
-  void atualizarPresenca(String eventoId, String convidadoId, bool presenca) {
-    _eventos.firstWhere((e) => e.id == eventoId).convidados.firstWhere((c) => c.id == convidadoId).presenca = presenca;
+  void atualizarPresenca(String eventoId, String convidadoId, PresencaStatus status) {
+    _eventos.firstWhere((e) => e.id == eventoId).convidados.firstWhere((c) => c.id == convidadoId).status = status;
     _salvarCache(); 
     notifyListeners();
   }
 
-  double getTaxaPresenca(Evento e) => e.convidados.isEmpty ? 0 : e.convidados.where((c) => c.presenca).length / e.convidados.length;
+  double getTaxaPresenca(Evento e) => e.convidados.isEmpty ? 0 : e.convidados.where((c) => c.status == PresencaStatus.accepted).length / e.convidados.length;
 }
 
 class LoginScreen extends StatefulWidget {
@@ -643,13 +690,40 @@ class EventDetail extends StatelessWidget {
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
                               leading: CircleAvatar(backgroundColor: theme.colorScheme.primary.withAlpha(25), foregroundColor: theme.colorScheme.primary, child: Text(c.iniciais, style: const TextStyle(fontWeight: FontWeight.bold))),
-                              title: Text(c.nome, style: TextStyle(fontWeight: FontWeight.w800, color: c.presenca ? theme.colorScheme.onSurface : Colors.grey, decoration: c.presenca ? TextDecoration.lineThrough : null)),
-                              subtitle: Text(c.email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
-                              trailing: Checkbox(
-                                value: c.presenca,
-                                activeColor: const Color(0xFF10B981),
-                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(6)),
-                                onChanged: (v) { HapticFeedback.lightImpact(); ctrl.atualizarPresenca(evento.id, c.id, v!); },
+                              title: Text(
+                                c.nome,
+                                style: TextStyle(
+                                  fontWeight: FontWeight.w800,
+                                  color: c.status == PresencaStatus.accepted
+                                      ? Colors.green
+                                      : c.status == PresencaStatus.refused
+                                          ? Colors.red
+                                          : Colors.grey,
+                                ),
+                              ),
+                              subtitle: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(c.email, style: const TextStyle(fontSize: 12, color: Colors.grey)),
+                                  const SizedBox(height: 4),
+                                  Text(c.statusLabel, style: TextStyle(fontSize: 12, color: c.status == PresencaStatus.accepted ? Colors.green : c.status == PresencaStatus.refused ? Colors.red : Colors.grey, fontWeight: FontWeight.w700)),
+                                ],
+                              ),
+                              trailing: GestureDetector(
+                                onTap: () { HapticFeedback.lightImpact(); ctrl.atualizarPresenca(evento.id, c.id, c.nextStatus); },
+                                child: Icon(
+                                  c.status == PresencaStatus.accepted
+                                      ? Icons.check_circle
+                                      : c.status == PresencaStatus.refused
+                                          ? Icons.cancel
+                                          : Icons.radio_button_unchecked,
+                                  color: c.status == PresencaStatus.accepted
+                                      ? Colors.green
+                                      : c.status == PresencaStatus.refused
+                                          ? Colors.red
+                                          : Colors.grey,
+                                  size: 24,
+                                ),
                               ),
                             ),
                           );
