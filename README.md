@@ -53,5 +53,3 @@ $ flutter pub get
 # Execute o aplicativo em modo de depuração
 $ flutter run
 
-Ênio Enrique
-Emerson
