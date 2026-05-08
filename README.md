@@ -14,7 +14,7 @@
 
 O **Satisfaction Eventos** é um aplicativo móvel (MVP) desenvolvido para simplificar o gerenciamento de eventos. Focado na experiência do anfitrião, o app permite a criação rápida de eventos, cadastro de convidados e controle de presença (check-in) em tempo real, utilizando uma interface premium com elementos de *Glassmorphism*.
 
-Este projeto foi desenvolvido como requisito avaliativo (AV2) para o curso de **Análise e Desenvolvimento de Sistemas (ADS)** da Uninassau.
+Este projeto foi desenvolvido como requisito avaliativo para o curso de **Análise e Desenvolvimento de Sistemas (ADS)**.
 
 ## ✨ Funcionalidades Principais
 
