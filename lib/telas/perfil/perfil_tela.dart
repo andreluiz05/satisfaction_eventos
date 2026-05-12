@@ -16,10 +16,16 @@ class PerfilScreen extends StatelessWidget {
         title: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            Image.asset('assets/imagens/logo_marca.png', height: 28),
-            const SizedBox(width: 12),
-            Text('Meu Perfil', style: TextStyle(color: theme.colorScheme.onSurface, fontWeight: FontWeight.w900, fontSize: 24)),
-          ],
+  Text(
+    'Meu Perfil', 
+    style: TextStyle(
+      color: theme.colorScheme.onSurface, 
+      fontWeight: FontWeight.w900, 
+      fontSize: 24,
+    ),
+  ),
+],
+          
         ),
       ),
       body: Padding(
