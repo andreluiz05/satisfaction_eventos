@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-import '../navegacao/navegacao_principal_tela.dart';
+import '../navegacao/navegacao_principal_tela.dart'; 
+import '../eventos/confirmacao_presenca_tela.dart';
+import '../../backend/controlers/eventos_controlador.dart'; // Importante para buscar os eventos
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -11,6 +13,73 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool isAnfitriao = true;
+
+  // Controladores para os campos de texto
+  final TextEditingController _emailController = TextEditingController();
+  final TextEditingController _senhaController = TextEditingController();
+  final TextEditingController _codigoController = TextEditingController();
+
+  @override
+  void dispose() {
+    _emailController.dispose();
+    _senhaController.dispose();
+    _codigoController.dispose();
+    super.dispose();
+  }
+
+  // Lógica de login para Anfitrião e Convidado
+  void _fazerLogin() {
+    HapticFeedback.heavyImpact();
+
+    if (isAnfitriao) {
+      final email = _emailController.text.trim();
+      final senha = _senhaController.text.trim();
+
+      if (email.isEmpty || senha.isEmpty) {
+        _mostrarMensagem('Preencha o e-mail e a senha.', isErro: true);
+        return;
+      }
+
+      // Login fixo do organizador
+      if (email == 'admin@satisfaction.com' && senha == '123456') {
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNavigation()));
+      } else {
+        _mostrarMensagem('E-mail ou senha incorretos.', isErro: true);
+      }
+    } else {
+      final codigo = _codigoController.text.trim().toUpperCase();
+
+      if (codigo.isEmpty) {
+        _mostrarMensagem('Digite o código do evento.', isErro: true);
+        return;
+      }
+
+      try {
+        // Busca o evento pelo código usando o controlador de eventos
+        final evento = SatisfactionController.instance.eventos.firstWhere((e) => e.id == codigo);
+        
+
+        Navigator.pushReplacement(
+          context, 
+          MaterialPageRoute(builder: (_) => ConfirmacaoPresencaScreen(evento: evento))
+        );
+      } catch (e) {
+        _mostrarMensagem('Evento não encontrado. Verifique o código.', isErro: true);
+      }
+    }
+  }
+
+  // Função para os alertas coloridos
+  void _mostrarMensagem(String msg, {required bool isErro}) {
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text(msg, style: const TextStyle(fontWeight: FontWeight.bold, color: Colors.white)),
+        backgroundColor: isErro ? Colors.redAccent : Colors.green,
+        behavior: SnackBarBehavior.floating,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+      )
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -40,7 +109,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           fit: BoxFit.contain,
                         ),
                         const SizedBox(height: 40),
-                    
+                        
                         Container(
                           padding: const EdgeInsets.all(4),
                           decoration: BoxDecoration(color: Colors.black.withAlpha(76), borderRadius: BorderRadius.circular(20)),
@@ -52,11 +121,11 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-                        _inputField(isAnfitriao ? 'E-mail do Organizador' : 'Código do Evento', Icons.alternate_email),
-                        const SizedBox(height: 16),
                         
                         if (isAnfitriao) ...[
-                          _inputField('Senha', Icons.lock_outline, obscure: true),
+                          _inputField('E-mail do Organizador', Icons.alternate_email, controller: _emailController),
+                          const SizedBox(height: 16),
+                          _inputField('Senha', Icons.lock_outline, obscure: true, controller: _senhaController),
                           const SizedBox(height: 8),
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -77,6 +146,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 24),
                         ] else ...[
+                          _inputField('Código do Evento', Icons.confirmation_num_outlined, controller: _codigoController),
                           const SizedBox(height: 40),
                         ],
                         
@@ -84,11 +154,7 @@ class _LoginScreenState extends State<LoginScreen> {
                           width: double.infinity, height: 60,
                           child: ElevatedButton(
                             style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF), foregroundColor: const Color(0xFF003D4C), elevation: 10, shadowColor: const Color(0xFF00E5FF).withAlpha(128), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20))),
-                            onPressed: () {
-                              HapticFeedback.heavyImpact();
-                              // Empurra a tela principal substituindo o login
-                              Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNavigation()));
-                            },
+                            onPressed: _fazerLogin, // Função ativada aqui
                             child: const Text('ENTRAR', style: TextStyle(fontWeight: FontWeight.w900, fontSize: 16, letterSpacing: 1.5)),
                           ),
                         ),
@@ -106,5 +172,11 @@ class _LoginScreenState extends State<LoginScreen> {
 
   Widget _loginTab(String t, bool active, VoidCallback fn) => Expanded(child: InkWell(onTap: fn, borderRadius: BorderRadius.circular(16), child: AnimatedContainer(duration: const Duration(milliseconds: 300), curve: Curves.easeOutQuart, padding: const EdgeInsets.symmetric(vertical: 14), decoration: BoxDecoration(color: active ? const Color(0xFF6A1B9A) : Colors.transparent, borderRadius: BorderRadius.circular(16)), child: Text(t, textAlign: TextAlign.center, style: TextStyle(color: active ? Colors.white : Colors.white54, fontWeight: active ? FontWeight.bold : FontWeight.normal, fontSize: 15)))));
 
-  Widget _inputField(String l, IconData i, {bool obscure = false}) => TextField(obscureText: obscure, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500), decoration: InputDecoration(prefixIcon: Icon(i, color: Colors.white70), labelText: l, labelStyle: const TextStyle(color: Colors.white60), filled: true, fillColor: Colors.black.withAlpha(51), border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5))));
+
+  Widget _inputField(String l, IconData i, {bool obscure = false, TextEditingController? controller}) => TextField(
+    controller: controller, 
+    obscureText: obscure, 
+    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500), 
+    decoration: InputDecoration(prefixIcon: Icon(i, color: Colors.white70), labelText: l, labelStyle: const TextStyle(color: Colors.white60), filled: true, fillColor: Colors.black.withAlpha(51), border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none), focusedBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5)))
+  );
 }

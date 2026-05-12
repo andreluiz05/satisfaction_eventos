@@ -3,13 +3,14 @@ import 'package:http/http.dart' as http;
 import '../models/evento_modelo.dart';
 
 class FirebaseServico {
-  // Sua URL do Firebase
-  static const String _baseUrl = 'https://satisfaction-eventos-default-rtdb.firebaseio.com/';
+  // A URL do Firebase (sem a barra no final para evitar erros de formatação)
+  static const String _baseUrl = 'https://satisfaction-eventos-default-rtdb.firebaseio.com';
 
-  // SALVAR (Create)
-  Future<void> criarEvento(Evento evento) async {
-    final url = Uri.parse('$_baseUrl/eventos.json');
-    await http.post(url, body: jsonEncode(evento.toJson()));
+  // SALVAR / ATUALIZAR (Create / Update)
+  // Houve a mudança de POST para PUT, forçando o Firebase a usar o código de 6 dígitos de cada evento como chave.
+  Future<void> salvarEvento(Evento evento) async {
+    final url = Uri.parse('$_baseUrl/eventos/${evento.id}.json');
+    await http.put(url, body: jsonEncode(evento.toJson()));
   }
 
   // BUSCAR TODOS (Read)
@@ -23,7 +24,15 @@ class FirebaseServico {
     final List<Evento> lista = [];
 
     dados.forEach((idFirebase, mapa) {
-      mapa['id'] = idFirebase; // O ID agora vem do Firebase
+      // O idFirebase será o seu código de 6 dígitos
+      mapa['id'] = idFirebase; 
+      
+      // Se o evento não tiver convidados, o Firebase retorna null
+      // Garantimos que seja uma lista vazia para evitar erros na hora de criar o objeto Evento
+      if (mapa['convidados'] == null) {
+        mapa['convidados'] = [];
+      }
+      
       lista.add(Evento.fromJson(mapa));
     });
 
