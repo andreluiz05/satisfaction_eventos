@@ -40,7 +40,7 @@ class EventDetail extends StatelessWidget {
                       Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF3B0B59), Color(0xFF6A1B9A)], begin: Alignment.topCenter, end: Alignment.bottomCenter))),
                       Positioned(
                         bottom: -40, 
-                        right: -40, 
+                        right: 560, 
                         child: Opacity(
                           opacity: 0.15, 
                           child: Image.asset('assets/imagens/logo_marca.png', height: 250)
