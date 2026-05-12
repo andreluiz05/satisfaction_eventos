@@ -32,11 +32,17 @@ class Dashboard extends StatelessWidget {
                   title: Row(
                     mainAxisSize: MainAxisSize.min, 
                     mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Image.asset('assets/imagens/logo_marca.png', height: 24),
-                      const SizedBox(width: 8),
-                      Text('Meus Eventos', style: TextStyle(fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface, letterSpacing: -0.5)),
-                    ],
+                   children: [
+                        Text(
+                       'Meus Eventos', 
+                        style: TextStyle(
+                           fontSize: 22,
+                           fontWeight: FontWeight.w900, 
+                            color: theme.colorScheme.onSurface, 
+                                 letterSpacing: -0.5,
+                                ),
+                                ),
+                               ],
                   ),
                   background: Padding(
                     padding: const EdgeInsets.only(top: 60, left: 24, right: 24),
