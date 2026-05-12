@@ -1,7 +1,7 @@
 # 🎟️ Satisfaction Eventos
 
 <div align="center">
-  <img src="assets/imagens/logo.png" alt="Logo Satisfaction Eventos" width="150"/>
+  <img src="assets/imagens/logo_marca.png" alt="Logo Satisfaction Eventos" width="150"/>
   <br/>
   <p><strong>Plataforma moderna e intuitiva para gestão de eventos e controle de convidados.</strong></p>
   
