@@ -2,9 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_database/firebase_database.dart'; // Pacote necessário para o Realtime
 import '../models/evento_modelo.dart';
 import '../models/convidado_modelo.dart';
-import '../services/firebase_servico.dart'; // Import do serviço que criamos
+import '../services/firebase_servico.dart';
 
 class SatisfactionController extends ChangeNotifier {
   static final SatisfactionController instance = SatisfactionController._();
@@ -13,13 +14,15 @@ class SatisfactionController extends ChangeNotifier {
   final List<Evento> _eventos = [];
   String _searchQuery = '';
   bool isDarkMode = false;
-  bool isCarregando = true; 
+  bool isCarregando = true;
   static const String _cacheKey = 'satisfaction_db_v2';
   
-  // Instância do serviço Firebase
   final FirebaseServico _firebase = FirebaseServico();
+  
+  // Referência direta ao nó de eventos no Firebase para o fluxo contínuo
+  final DatabaseReference _dbRef = FirebaseDatabase.instance.ref("eventos");
 
-  // Gerador de ID curto alfanumérico (6 dígitos)
+  // Gera um código único alfanumérico de 6 dígitos para identificação do evento
   String generateEventId() {
     const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
     final random = Random();
@@ -32,104 +35,132 @@ class SatisfactionController extends ChangeNotifier {
     return id;
   }
 
-  // Inicialização: Carrega do Firebase ou do cache local
-  Future<void> initCache() async {
+  // Inicia a escuta contínua do Firebase (Substitui o antigo initCache e refreshData)
+  void monitorarFirebase() {
     isCarregando = true;
-    notifyListeners(); 
+    notifyListeners();
 
-    try {
-      // 1. Tenta carregar do Firebase
-      final eventosRemotos = await _firebase.lerEventos();
+    // Cria um "túnel" que escuta qualquer mudança no banco em tempo real
+    _dbRef.onValue.listen((DatabaseEvent event) {
+      final data = event.snapshot.value as Map<dynamic, dynamic>?;
+
+      _eventos.clear();
       
-      if (eventosRemotos.isNotEmpty) {
-        _eventos.clear();
-        _eventos.addAll(eventosRemotos);
-        await _salvarCacheLocal(); 
-      } else {
-        // 2. Fallback para o cache local se estiver offline ou sem dados na nuvem
-        final prefs = await SharedPreferences.getInstance();
-        final jsonString = prefs.getString(_cacheKey);
-        
-        if (jsonString != null && jsonString.isNotEmpty) {
-          final List<dynamic> decoded = jsonDecode(jsonString);
-          _eventos.clear();
-          _eventos.addAll(decoded.map((e) => Evento.fromJson(e)).toList());
-        } else {
-          await _salvarCacheLocal();
-        } // Se ambos falharem, _eventos permanecerá vazio, o que é aceitável para um novo usuário
+      if (data != null) {
+        data.forEach((key, value) {
+          // Converte o valor do Firebase para um Map que o Flutter entende
+          final mapaData = Map<String, dynamic>.from(value);
+          
+          // Injeta a chave (key) do Firebase como o 'id' do evento
+          mapaData['id'] = key; 
+          
+          // Usa o método fromJson que já existe no seu modelo
+          _eventos.add(Evento.fromJson(mapaData));
+        });
       }
-    } catch (e) {
-      debugPrint("Erro ao carregar dados: $e");
-    } finally {
+
       isCarregando = false;
-      notifyListeners(); 
-    }
+      _salvarCacheLocal(); // Mantém o backup local sempre sincronizado
+      notifyListeners(); // Força a tela a se atualizar automaticamente
+      
+    }, onError: (error) {
+      debugPrint("Erro no Realtime: $error");
+      _carregarCacheLocal(); // Fallback se houver erro de conexão
+    });
   }
 
+  // Carrega do armazenamento interno se o Firebase falhar ou estiver sem internet
+  Future<void> _carregarCacheLocal() async {
+    final prefs = await SharedPreferences.getInstance();
+    final jsonString = prefs.getString(_cacheKey);
+    if (jsonString != null && jsonString.isNotEmpty) {
+      final List<dynamic> decoded = jsonDecode(jsonString);
+      _eventos.clear();
+      for (var item in decoded) {
+        _eventos.add(Evento.fromJson(item));
+      }
+    }
+    isCarregando = false;
+    notifyListeners();
+  }
+
+  // Persiste a lista atual de eventos no armazenamento interno do celular
   Future<void> _salvarCacheLocal() async {
     final prefs = await SharedPreferences.getInstance();
     final jsonString = jsonEncode(_eventos.map((e) => e.toJson()).toList());
     await prefs.setString(_cacheKey, jsonString);
   }
 
-  List<Evento> get eventos => _searchQuery.isEmpty 
-    ? _eventos 
-    : _eventos.where((e) => e.nome.toLowerCase().contains(_searchQuery.toLowerCase()) || 
-                            e.local.toLowerCase().contains(_searchQuery.toLowerCase())).toList();
+  // Retorna a lista de eventos filtrada com base na busca do usuário
+  List<Evento> get eventos {
+    if (_searchQuery.isEmpty) {
+      return _eventos;
+    } else {
+      return _eventos.where((e) {
+        final nomeMatch = e.nome.toLowerCase().contains(_searchQuery.toLowerCase());
+        final localMatch = e.local.toLowerCase().contains(_searchQuery.toLowerCase());
+        return nomeMatch || localMatch;
+      }).toList();
+    }
+  }
 
-  void toggleTheme() { isDarkMode = !isDarkMode; notifyListeners(); }
-  void setSearchQuery(String query) { _searchQuery = query; notifyListeners(); }
-
-  // SALVAR / CRIAR EVENTO
-  void salvarEvento(Evento e) async {
-    final i = _eventos.indexWhere((item) => item.id == e.id);
-    if (i != -1) { _eventos[i] = e; } else { _eventos.add(e); }
-    
+  void toggleTheme() {
+    isDarkMode = !isDarkMode;
     notifyListeners();
-    await _salvarCacheLocal();
-    await _firebase.salvarEvento(e); // Sincroniza com Firebase
   }
 
-  // DELETAR EVENTO
-  void deletarEvento(String id) async { 
-    _eventos.removeWhere((e) => e.id == id); 
-    notifyListeners(); 
-    await _salvarCacheLocal();
-    await _firebase.deletar(id); 
+  void setSearchQuery(String query) {
+    _searchQuery = query;
+    notifyListeners();
   }
 
-  // ADICIONAR CONVIDADO
+  // Adiciona um novo evento ou atualiza um existente no local e no Firebase
+  void salvarEvento(Evento e) async {
+    final index = _eventos.indexWhere((item) => item.id == e.id);
+    if (index != -1) {
+      _eventos[index] = e;
+    } else {
+      _eventos.add(e);
+    }
+    notifyListeners(); // Feedback imediato para o usuário
+    await _firebase.salvarEvento(e); // O Firebase receberá o dado e o Stream confirmará
+  }
+
+  void deletarEvento(String id) async {
+    _eventos.removeWhere((e) => e.id == id);
+    notifyListeners();
+    await _firebase.deletar(id);
+  }
+
   void adicionarConvidado(String eventoId, Convidado c) async {
     final evento = _eventos.firstWhere((e) => e.id == eventoId);
     evento.convidados.add(c);
-    
     notifyListeners();
-    await _salvarCacheLocal();
     await _firebase.salvarEvento(evento);
   }
 
-  // DELETAR CONVIDADO
   void deletarConvidado(String eventoId, String convidadoId) async {
     final evento = _eventos.firstWhere((e) => e.id == eventoId);
     evento.convidados.removeWhere((c) => c.id == convidadoId);
-    
     notifyListeners();
-    await _salvarCacheLocal();
     await _firebase.salvarEvento(evento);
   }
 
-  // ATUALIZAR PRESENÇA DO CONVIDADO
+  // Atualiza o status de presença (confirmado/recusado) de um convidado específico
   void atualizarPresenca(String eventoId, String convidadoId, PresencaStatus status) async {
     final evento = _eventos.firstWhere((e) => e.id == eventoId);
-    evento.convidados.firstWhere((c) => c.id == convidadoId).status = status;
-    
+    final convidado = evento.convidados.firstWhere((c) => c.id == convidadoId);
+    convidado.status = status;
     notifyListeners();
-    await _salvarCacheLocal();
     await _firebase.salvarEvento(evento);
   }
 
-  // Taxa de Resposta (Aceitos + Recusados)
-  double getTaxaResposta(Evento e) => e.convidados.isEmpty 
-    ? 0 
-    : e.convidados.where((c) => c.status != PresencaStatus.none).length / e.convidados.length;
+  // Calcula a porcentagem de convidados que já responderam (Aceitaram ou Recusaram)
+  double getTaxaResposta(Evento e) {
+    if (e.convidados.isEmpty) {
+      return 0.0;
+    }
+    final respondidos = e.convidados.where((c) => c.status != PresencaStatus.none).length;
+    return respondidos / e.convidados.length;
+  }
 }

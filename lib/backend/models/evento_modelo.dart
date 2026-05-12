@@ -27,6 +27,10 @@ class Evento {
     data: json['data'], 
     horario: json['horario'],
     descricao: json['descricao'] ?? '', // <-- Lendo do cache (ou vazio se for antigo)
-    convidados: (json['convidados'] as List).map((c) => Convidado.fromJson(c)).toList(),
+    
+    // A mágica acontece na linha abaixo: Map<String, dynamic>.from(c)
+    convidados: json['convidados'] != null 
+        ? (json['convidados'] as List).map((c) => Convidado.fromJson(Map<String, dynamic>.from(c as Map))).toList()
+        : [],
   );
 }

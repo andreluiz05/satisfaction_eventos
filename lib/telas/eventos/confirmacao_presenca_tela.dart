@@ -210,7 +210,7 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
                                       child: ElevatedButton(
                                         style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
                                         onPressed: () => _responderConvite(PresencaStatus.accepted),
-                                        child: const Text('CONFIRMAR PRESENÇA', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        child: const Text('CONFIRMAR', style: TextStyle(fontWeight: FontWeight.bold)),
                                       ),
                                     ),
                                   ],

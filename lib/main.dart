@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'backend/services/firebase_options.dart'; // Arquivo gerado pelo FlutterFire CLI
 
 import 'backend/controlers/eventos_controlador.dart';
 import 'telas/autenticacao/login_tela.dart';
@@ -7,8 +8,13 @@ import 'telas/autenticacao/login_tela.dart';
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   
-  // A sua lógica de inicialização de cache mantida intacta
-  await SatisfactionController.instance.initCache();
+  // Inicializa o Firebase passando as chaves automáticas para Web e Android
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
+  
+  // Inicia a escuta do banco de dados em tempo real
+  SatisfactionController.instance.monitorarFirebase();
   
   runApp(const SatisfactionApp());
 }
@@ -24,10 +30,8 @@ class SatisfactionApp extends StatelessWidget {
         return MaterialApp(
           debugShowCheckedModeBanner: false,
           
-          // A lógica de alternância de tema
           themeMode: SatisfactionController.instance.isDarkMode ? ThemeMode.dark : ThemeMode.light,
           
-          // Tema claro personalizado
           theme: ThemeData(
             useMaterial3: true,
             fontFamily: 'Inter',
@@ -41,7 +45,6 @@ class SatisfactionApp extends StatelessWidget {
             ),
           ),
           
-          // O tema escuro personalizado
           darkTheme: ThemeData(
             useMaterial3: true,
             fontFamily: 'Inter',
@@ -55,7 +58,6 @@ class SatisfactionApp extends StatelessWidget {
             ),
           ),
           
-          // Lógica de tela de carregamento antes do Login
           home: SatisfactionController.instance.isCarregando 
               ? const Scaffold(body: Center(child: CircularProgressIndicator())) 
               : const LoginScreen(),

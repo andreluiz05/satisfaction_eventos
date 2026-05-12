@@ -41,7 +41,7 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       // Login fixo do organizador
-      if (email == 'admin@satisfaction.com' && senha == '123456') {
+      if (email == 'admin' && senha == '123') {
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNavigation()));
       } else {
         _mostrarMensagem('E-mail ou senha incorretos.', isErro: true);

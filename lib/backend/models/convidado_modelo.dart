@@ -13,7 +13,7 @@ class Convidado {
 
   String get iniciais => nome.trim().split(RegExp(' +')).map((s) => s.isNotEmpty ? s[0] : '').take(2).join().toUpperCase();
 
-  // SEU CÓDIGO ORIGINAL: Lógica de transição de status
+  // Lógica de transição de status (para caso tenha eventos anteriores e queira manter a compatibilidade)
   PresencaStatus get nextStatus {
     switch (status) {
       case PresencaStatus.none:
@@ -25,7 +25,7 @@ class Convidado {
     }
   }
 
-  // SEU CÓDIGO ORIGINAL: Labels amigáveis para a tela de detalhes
+  // Nomes amigáveis para a tela de detalhes
   String get statusLabel {
     switch (status) {
       case PresencaStatus.accepted:
@@ -59,7 +59,7 @@ class Convidado {
         orElse: () => PresencaStatus.none,
       );
     }
-    // Fallback de segurança para o boolean do seu colega
+    // Compatibilidade com versões anteriores que usavam 'presenca' como bool
     final presencaValue = json['presenca'];
     if (presencaValue is bool) {
       return presencaValue ? PresencaStatus.accepted : PresencaStatus.refused;

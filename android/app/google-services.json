@@ -1,0 +1,30 @@
+{
+  "project_info": {
+    "project_number": "671714407872",
+    "firebase_url": "https://satisfaction-eventos-default-rtdb.firebaseio.com",
+    "project_id": "satisfaction-eventos",
+    "storage_bucket": "satisfaction-eventos.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:671714407872:android:0068d76320b58c36840425",
+        "android_client_info": {
+          "package_name": "com.example.satisfaction_eventos"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCms6WNzZEeMUh_j_RD-wYXjQZLL9v1hIw"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
