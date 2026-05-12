@@ -32,7 +32,7 @@ O projeto foi construído utilizando as melhores práticas de Engenharia de Soft
 * **Framework:** Flutter (SDK `>=3.8.1 <4.0.0`)
 * **Linguagem:** Dart
 * **Armazenamento Nuvem:** `FireBase - NoSQL (JSON)
-* **Arquitetura:** Padrão **MVC** (Model-View-Controller) modificado, com separação clara entre a camada de apresentação (`Widgets`), regras de negócio e controle de estado (`ChangeNotifier`).
+* **Arquitetura:** Padrão **MSC** (Model-Service-Controller) modificado, com separação clara entre a camada de apresentação (`Widgets`), regras de negócio e controle de estado (`ChangeNotifier`).
 
 ## 🚀 Como Executar o Projeto
 
