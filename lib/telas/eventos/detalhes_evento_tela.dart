@@ -1,9 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controlers/eventos_controlador.dart';
-import '../../backend/controlers/login_controlador.dart';
 import '../../backend/models/convidado_modelo.dart';
-import '../../backend/models/evento_modelo.dart';
 
 class EventDetail extends StatelessWidget {
   final String eventoId;
@@ -21,27 +19,7 @@ class EventDetail extends StatelessWidget {
         if (eventoList.isEmpty) return const Scaffold(); 
         final evento = eventoList.first;
         
-        final currentHost = LoginControlador.instance.current;
-        if (currentHost == null) {
-          return Scaffold(
-            appBar: AppBar(title: const Text('Evento')),
-            body: const Center(
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: 24),
-                child: Text(
-                  'Você precisa entrar com um anfitrião para ver ou editar eventos.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
-                ),
-              ),
-            ),
-          );
-        }
-
         final p = ctrl.getTaxaResposta(evento);
-
-        final currentHostId = currentHost.id;
-        final isOwner = currentHostId == evento.anfitriaoId;
 
         return Scaffold(
           body: CustomScrollView(
@@ -52,14 +30,6 @@ class EventDetail extends StatelessWidget {
                 stretch: true,
                 backgroundColor: theme.colorScheme.primary,
                 iconTheme: const IconThemeData(color: Colors.white),
-                actions: isOwner
-                  ? [
-                      IconButton(
-                        icon: const Icon(Icons.edit_outlined, color: Colors.white),
-                        onPressed: () => _showEditEventDialog(context, evento),
-                      )
-                    ]
-                  : null,
                 flexibleSpace: FlexibleSpaceBar(
                   stretchModes: const [StretchMode.zoomBackground, StretchMode.blurBackground],
                   titlePadding: const EdgeInsets.only(left: 48, bottom: 16, right: 16),
@@ -84,8 +54,6 @@ class EventDetail extends StatelessWidget {
                             Row(children: [const Icon(Icons.event_available_rounded, color: Colors.white70, size: 16), const SizedBox(width: 8), Text('${evento.data} • ${evento.horario}', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600))]),
                             const SizedBox(height: 8),
                             Row(children: [const Icon(Icons.place_rounded, color: Colors.white70, size: 16), const SizedBox(width: 8), Text(evento.local, style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600))]),
-                            const SizedBox(height: 8),
-                            Row(children: [const Icon(Icons.vpn_key_rounded, color: Colors.white70, size: 16), const SizedBox(width: 8), Flexible(child: Text('Código: ${evento.id}', style: const TextStyle(color: Colors.white70, fontWeight: FontWeight.w600), overflow: TextOverflow.ellipsis))]),
                           ],
                         ),
                       )
@@ -179,23 +147,12 @@ class EventDetail extends StatelessWidget {
                                   Text(c.statusLabel, style: TextStyle(fontSize: 12, color: c.status == PresencaStatus.accepted ? Colors.green : c.status == PresencaStatus.refused ? Colors.red : Colors.grey, fontWeight: FontWeight.w700)),
                                 ],
                               ),
-                              trailing: isOwner
-                                ? Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      IconButton(
-                                        icon: const Icon(Icons.edit, color: Colors.blueAccent, size: 20),
-                                        onPressed: () => _showEditGuestDialog(context, evento, c),
-                                      ),
-                                      IconButton(
-                                        icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
-                                        onPressed: () {
-                                          _confirmarDelecao(context, evento.id, c.id, c.nome);
-                                        },
-                                      ),
-                                    ],
-                                  )
-                                : null,
+                              trailing: IconButton(
+                                icon: const Icon(Icons.delete_outline_rounded, color: Colors.redAccent, size: 20),
+                                onPressed: () {
+                                  _confirmarDelecao(context, evento.id, c.id, c.nome);
+                                },
+                              ),
                             ),
                           );
                         },
@@ -206,13 +163,11 @@ class EventDetail extends StatelessWidget {
               const SliverPadding(padding: EdgeInsets.only(bottom: 100)) 
             ],
           ),
-          floatingActionButton: isOwner
-            ? FloatingActionButton(
-                onPressed: () { HapticFeedback.lightImpact(); _addGuest(context, evento.id); },
-                backgroundColor: theme.colorScheme.secondary,
-                child: const Icon(Icons.person_add_rounded, color: Color(0xFF003D4C)),
-              )
-            : null,
+          floatingActionButton: FloatingActionButton(
+            onPressed: () { HapticFeedback.lightImpact(); _addGuest(context, evento.id); },
+            backgroundColor: theme.colorScheme.secondary,
+            child: const Icon(Icons.person_add_rounded, color: Color(0xFF003D4C)),
+          ),
         );
       }
     );
@@ -254,18 +209,11 @@ void _confirmarDelecao(BuildContext context, String eventoId, String convidadoId
 }
 
   void _addGuest(BuildContext context, String eventoId) {
-    _showGuestDialog(context, eventoId, null);
-  }
-
-  void _showGuestDialog(BuildContext context, String eventoId, Convidado? convidado) {
     final formKey = GlobalKey<FormState>();
-    final n = TextEditingController(text: convidado?.nome ?? '');
-    final e = TextEditingController(text: convidado?.email ?? '');
-    final title = convidado == null ? 'Novo Convidado' : 'Editar Convidado';
-
+    final n = TextEditingController(), e = TextEditingController();
     showDialog(context: context, builder: (_) => AlertDialog(
       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
+      title: const Text('Novo Convidado', style: TextStyle(fontWeight: FontWeight.w900)),
       content: Form(
         key: formKey,
         child: Column(mainAxisSize: MainAxisSize.min, children: [
@@ -293,159 +241,15 @@ void _confirmarDelecao(BuildContext context, String eventoId, String convidadoId
         TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
         ElevatedButton(
           style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-          onPressed: () {
+          onPressed: () { 
             if(formKey.currentState!.validate()) {
-              final guest = convidado == null
-                ? Convidado(id: DateTime.now().toString(), nome: n.text, email: e.text)
-                : Convidado(id: convidado.id, nome: n.text, email: e.text, status: convidado.status);
-
-              if (convidado == null) {
-                SatisfactionController.instance.adicionarConvidado(eventoId, guest);
-              } else {
-                SatisfactionController.instance.editarConvidado(eventoId, guest);
-              }
-
-              Navigator.pop(context);
+              SatisfactionController.instance.adicionarConvidado(eventoId, Convidado(id: DateTime.now().toString(), nome: n.text, email: e.text)); 
+              Navigator.pop(context); 
             }
-          },
-          child: Text(convidado == null ? 'Adicionar' : 'Salvar', style: const TextStyle(color: Colors.white))
+          }, 
+          child: const Text('Adicionar', style: TextStyle(color: Colors.white))
         )
       ],
     ));
-  }
-
-  void _showEditGuestDialog(BuildContext context, Evento evento, Convidado convidado) {
-    _showGuestDialog(context, evento.id, convidado);
-  }
-
-  void _showEditEventDialog(BuildContext context, Evento evento) {
-    final formKey = GlobalKey<FormState>();
-    final nome = TextEditingController(text: evento.nome);
-    final local = TextEditingController(text: evento.local);
-    final data = TextEditingController(text: evento.data);
-    final horario = TextEditingController(text: evento.horario);
-    final desc = TextEditingController(text: evento.descricao);
-
-    showDialog(context: context, builder: (_) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: const Text('Editar Evento', style: TextStyle(fontWeight: FontWeight.w900)),
-      content: Form(
-        key: formKey,
-        child: SingleChildScrollView(
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextFormField(controller: nome, decoration: InputDecoration(labelText: 'Nome do Evento', filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)), validator: (v) => v!.isEmpty ? 'Obrigatório' : null),
-            const SizedBox(height: 16),
-            TextFormField(controller: local, decoration: InputDecoration(labelText: 'Localização', filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)), validator: (v) => v!.isEmpty ? 'Obrigatório' : null),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: data,
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: 'Data',
-                prefixIcon: const Icon(Icons.calendar_today_rounded),
-                filled: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
-              validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-              onTap: () async {
-                final initialDate = _parseBrazilDate(data.text) ?? DateTime.now();
-                final selected = await showDatePicker(
-                  context: context,
-                  initialDate: initialDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                  locale: const Locale('pt', 'BR'),
-                );
-                if (selected != null) {
-                  data.text = _formatBrazilDate(selected);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: horario,
-              readOnly: true,
-              decoration: InputDecoration(
-                labelText: 'Horário',
-                prefixIcon: const Icon(Icons.access_time_rounded),
-                filled: true,
-                border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none),
-              ),
-              validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-              onTap: () async {
-                final initialTime = _parseBrazilTime(horario.text) ?? TimeOfDay.now();
-                final selected = await showTimePicker(
-                  context: context,
-                  initialTime: initialTime,
-                  builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                    child: child ?? const SizedBox.shrink(),
-                  ),
-                );
-                if (selected != null) {
-                  horario.text = _formatBrazilTime(selected);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(controller: desc, maxLines: 3, decoration: InputDecoration(labelText: 'Descrição (Opcional)', alignLabelWithHint: true, filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none))),
-          ]),
-        ),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-          onPressed: () {
-            if (formKey.currentState!.validate()) {
-              final updated = Evento(
-                id: evento.id,
-                nome: nome.text,
-                local: local.text,
-                data: data.text,
-                horario: horario.text,
-                descricao: desc.text,
-                convidados: evento.convidados,
-                anfitriaoId: evento.anfitriaoId,
-              );
-              SatisfactionController.instance.editarEvento(updated);
-              Navigator.pop(context);
-            }
-          },
-          child: const Text('Salvar', style: TextStyle(color: Colors.white)),
-        )
-      ],
-    ));
-  }
-
-  String _formatBrazilDate(DateTime value) {
-    return '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
-  }
-
-  DateTime? _parseBrazilDate(String value) {
-    try {
-      final parts = value.split('/');
-      if (parts.length != 3) return null;
-      return DateTime(int.parse(parts[2]), int.parse(parts[1]), int.parse(parts[0]));
-    } catch (_) {
-      return null;
-    }
-  }
-
-  String _formatBrazilTime(TimeOfDay value) {
-    return '${value.hour.toString().padLeft(2, '0')}:${value.minute.toString().padLeft(2, '0')}';
-  }
-
-  TimeOfDay? _parseBrazilTime(String value) {
-    try {
-      final parts = value.split(':');
-      if (parts.length != 2) return null;
-      final hour = int.parse(parts[0]);
-      final minute = int.parse(parts[1]);
-      if (hour < 0 || hour > 23 || minute < 0 || minute > 59) return null;
-      return TimeOfDay(hour: hour, minute: minute);
-    } catch (_) {
-      return null;
-    }
   }
 }

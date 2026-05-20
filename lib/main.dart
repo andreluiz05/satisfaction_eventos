@@ -1,10 +1,8 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'backend/services/firebase_options.dart'; // Arquivo gerado pelo FlutterFire CLI
 
 import 'backend/controlers/eventos_controlador.dart';
-import 'backend/controlers/login_controlador.dart';
 import 'telas/autenticacao/login_tela.dart';
 
 void main() async {
@@ -15,8 +13,6 @@ void main() async {
     options: DefaultFirebaseOptions.currentPlatform,
   );
   
-  // Carrega sessão de anfitrião (se houver) antes de iniciar a escuta do Firebase
-  await LoginControlador.instance.loadCurrentFromPrefs();
   // Inicia a escuta do banco de dados em tempo real
   SatisfactionController.instance.monitorarFirebase();
   
@@ -61,13 +57,7 @@ class SatisfactionApp extends StatelessWidget {
               brightness: Brightness.dark
             ),
           ),
-          locale: const Locale('pt', 'BR'),
-          supportedLocales: const [Locale('pt', 'BR')],
-          localizationsDelegates: [
-            GlobalMaterialLocalizations.delegate,
-            GlobalWidgetsLocalizations.delegate,
-            GlobalCupertinoLocalizations.delegate,
-          ],
+          
           home: SatisfactionController.instance.isCarregando 
               ? const Scaffold(body: Center(child: CircularProgressIndicator())) 
               : const LoginScreen(),

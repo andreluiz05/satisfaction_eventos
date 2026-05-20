@@ -4,7 +4,6 @@ import 'dart:ui';
 import '../navegacao/navegacao_principal_tela.dart'; 
 import '../eventos/confirmacao_presenca_tela.dart';
 import '../../backend/controlers/eventos_controlador.dart'; // Importante para buscar os eventos
-import '../../backend/controlers/login_controlador.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -29,7 +28,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   // Lógica de login para Anfitrião e Convidado
-  Future<void> _fazerLogin() async {
+  void _fazerLogin() {
     HapticFeedback.heavyImpact();
 
     if (isAnfitriao) {
@@ -43,9 +42,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
       // Login fixo do organizador
       if (email == 'admin' && senha == '123') {
-        await LoginControlador.instance.loginAsAdmin();
-        // Reattach Firebase listener after successful login so events get filtered for this host
-        SatisfactionController.instance.monitorarFirebase();
         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const MainNavigation()));
       } else {
         _mostrarMensagem('E-mail ou senha incorretos.', isErro: true);
@@ -59,19 +55,16 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       try {
-        // Busca o evento diretamente no Firebase pelo código (permite acesso sem login de anfitrião)
-        final evento = await SatisfactionController.instance.buscarEventoPorCodigo(codigo);
-        if (evento == null) {
-          _mostrarMensagem('Evento não encontrado. Verifique o código.', isErro: true);
-          return;
-        }
+        // Busca o evento pelo código usando o controlador de eventos
+        final evento = SatisfactionController.instance.eventos.firstWhere((e) => e.id == codigo);
+        
 
         Navigator.pushReplacement(
-          context,
+          context, 
           MaterialPageRoute(builder: (_) => ConfirmacaoPresencaScreen(evento: evento))
         );
       } catch (e) {
-        _mostrarMensagem('Erro ao buscar evento. Tente novamente.', isErro: true);
+        _mostrarMensagem('Evento não encontrado. Verifique o código.', isErro: true);
       }
     }
   }

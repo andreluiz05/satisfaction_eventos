@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controlers/eventos_controlador.dart';
-import '../../backend/controlers/login_controlador.dart';
 import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart'; 
 import '../eventos/detalhes_evento_tela.dart';
@@ -16,8 +15,6 @@ class Dashboard extends StatelessWidget {
       listenable: SatisfactionController.instance,
       builder: (context, _) {
         final ctrl = SatisfactionController.instance;
-        final currentHost = LoginControlador.instance.current;
-        final hasHost = currentHost != null;
         return Scaffold(
           body: CustomScrollView(
             physics: const BouncingScrollPhysics(),
@@ -88,11 +85,9 @@ class Dashboard extends StatelessWidget {
                 ),
               ),
 
-              !hasHost
-                ? SliverFillRemaining(child: _emptyStateNoHost())
-                : ctrl.eventos.isEmpty 
-                    ? SliverFillRemaining(child: _emptyState())
-                    : SliverPadding(
+              ctrl.eventos.isEmpty 
+                ? SliverFillRemaining(child: _emptyState())
+                : SliverPadding(
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     sliver: SliverList(
                       delegate: SliverChildBuilderDelegate(
@@ -124,15 +119,13 @@ class Dashboard extends StatelessWidget {
                   ),
             ],
           ),
-          floatingActionButton: hasHost
-            ? FloatingActionButton.extended(
-                onPressed: () { HapticFeedback.lightImpact(); _showAddDialog(context); },
-                backgroundColor: theme.colorScheme.primary,
-                elevation: 8,
-                label: const Text('NOVO EVENTO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
-                icon: const Icon(Icons.add_rounded, color: Colors.white),
-              )
-            : null,
+          floatingActionButton: FloatingActionButton.extended(
+            onPressed: () { HapticFeedback.lightImpact(); _showAddDialog(context); },
+            backgroundColor: theme.colorScheme.primary,
+            elevation: 8,
+            label: const Text('NOVO EVENTO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w800)),
+            icon: const Icon(Icons.add_rounded, color: Colors.white),
+          ),
         );
       },
     );
@@ -144,18 +137,7 @@ class Dashboard extends StatelessWidget {
       children: [
         Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: Colors.grey.withAlpha(25), shape: BoxShape.circle), child: const Icon(Icons.search_off_rounded, size: 64, color: Colors.grey)),
         const SizedBox(height: 24),
-        const Text('Nenhum evento encontrado', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.grey)),
-      ],
-    ),
-  );
-
-  Widget _emptyStateNoHost() => Center(
-    child: Column(
-      mainAxisAlignment: MainAxisAlignment.center,
-      children: [
-        Container(padding: const EdgeInsets.all(24), decoration: BoxDecoration(color: Colors.grey.withAlpha(25), shape: BoxShape.circle), child: const Icon(Icons.lock_outline_rounded, size: 64, color: Colors.grey)),
-        const SizedBox(height: 24),
-        const Text('Faça login para ver e criar seus eventos.', textAlign: TextAlign.center, style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.grey)),
+        const Text('Nada encontrado', style: TextStyle(fontSize: 20, fontWeight: FontWeight.w800, color: Colors.grey)),
       ],
     ),
   );
@@ -203,22 +185,7 @@ class Dashboard extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 8),
-                  Row(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      IconButton(
-                        padding: EdgeInsets.zero,
-                        constraints: const BoxConstraints(),
-                        icon: Icon(Icons.edit_outlined, color: theme.colorScheme.primary, size: 18),
-                        onPressed: () {
-                          HapticFeedback.lightImpact();
-                          _showEditEventDialog(context, e);
-                        },
-                      ),
-                      const SizedBox(width: 8),
-                      const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-                    ],
-                  ),
+                  const Icon(Icons.chevron_right_rounded, color: Colors.grey),
                 ],
               ),
             ],
@@ -227,130 +194,6 @@ class Dashboard extends StatelessWidget {
       ),
     ),
   );
-
-  void _showEditEventDialog(BuildContext context, Evento evento) {
-    final formKey = GlobalKey<FormState>();
-    final nome = TextEditingController(text: evento.nome);
-    final local = TextEditingController(text: evento.local);
-    final data = TextEditingController(text: evento.data);
-    final horario = TextEditingController(text: evento.horario);
-    final desc = TextEditingController(text: evento.descricao);
-
-    showDialog(context: context, builder: (_) => AlertDialog(
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-      title: const Text('Editar Evento', style: TextStyle(fontWeight: FontWeight.w900)),
-      content: SingleChildScrollView(
-        child: Form(
-          key: formKey,
-          child: Column(mainAxisSize: MainAxisSize.min, children: [
-            TextFormField(controller: nome, decoration: InputDecoration(labelText: 'Nome do Evento', filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)), validator: (v) => v!.isEmpty ? 'Obrigatório' : null),
-            const SizedBox(height: 16),
-            TextFormField(controller: local, decoration: InputDecoration(labelText: 'Localização', filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)), validator: (v) => v!.isEmpty ? 'Obrigatório' : null),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: data,
-              readOnly: true,
-              decoration: InputDecoration(labelText: 'Data', filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)),
-              validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-              onTap: () async {
-                final initialDate = _parseBrazilDate(data.text) ?? DateTime.now();
-                final selected = await showDatePicker(
-                  context: context,
-                  initialDate: initialDate,
-                  firstDate: DateTime(2000),
-                  lastDate: DateTime(2100),
-                  locale: const Locale('pt', 'BR'),
-                );
-                if (selected != null) {
-                  data.text = _formatBrazilDate(selected);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(
-              controller: horario,
-              readOnly: true,
-              decoration: InputDecoration(labelText: 'Horário', filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none)),
-              validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-              onTap: () async {
-                final initialTime = _parseBrazilTime(horario.text) ?? TimeOfDay.now();
-                final selected = await showTimePicker(
-                  context: context,
-                  initialTime: initialTime,
-                  builder: (context, child) => MediaQuery(
-                    data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true),
-                    child: child ?? const SizedBox.shrink(),
-                  ),
-                );
-                if (selected != null) {
-                  horario.text = _formatBrazilTime(selected);
-                }
-              },
-            ),
-            const SizedBox(height: 16),
-            TextFormField(controller: desc, maxLines: 3, decoration: InputDecoration(labelText: 'Descrição (Opcional)', alignLabelWithHint: true, filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(16), borderSide: BorderSide.none))),
-          ]),
-        ),
-      ),
-      actions: [
-        TextButton(onPressed: () => Navigator.pop(context), child: const Text('Cancelar')),
-        ElevatedButton(
-          style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12))),
-          onPressed: () {
-            if (formKey.currentState!.validate()) {
-              final updated = Evento(
-                id: evento.id,
-                nome: nome.text,
-                local: local.text,
-                data: data.text,
-                horario: horario.text,
-                descricao: desc.text,
-                convidados: evento.convidados,
-                anfitriaoId: evento.anfitriaoId,
-              );
-              SatisfactionController.instance.editarEvento(updated);
-              Navigator.pop(context);
-            }
-          },
-          child: const Text('Salvar', style: TextStyle(color: Colors.white)),
-        ),
-      ],
-    ));
-  }
-
-  String _formatBrazilDate(DateTime value) {
-    final day = value.day.toString().padLeft(2, '0');
-    final month = value.month.toString().padLeft(2, '0');
-    final year = value.year.toString();
-    return '$day/$month/$year';
-  }
-
-  DateTime? _parseBrazilDate(String value) {
-    if (value.isEmpty) return null;
-    final parts = value.split('/');
-    if (parts.length != 3) return null;
-    final day = int.tryParse(parts[0]);
-    final month = int.tryParse(parts[1]);
-    final year = int.tryParse(parts[2]);
-    if (day == null || month == null || year == null) return null;
-    return DateTime(year, month, day);
-  }
-
-  String _formatBrazilTime(TimeOfDay value) {
-    final hour = value.hour.toString().padLeft(2, '0');
-    final minute = value.minute.toString().padLeft(2, '0');
-    return '$hour:$minute';
-  }
-
-  TimeOfDay? _parseBrazilTime(String value) {
-    if (value.isEmpty) return null;
-    final parts = value.split(':');
-    if (parts.length != 2) return null;
-    final hour = int.tryParse(parts[0]);
-    final minute = int.tryParse(parts[1]);
-    if (hour == null || minute == null) return null;
-    return TimeOfDay(hour: hour, minute: minute);
-  }
 
 void _confirmarDelecaoEvento(BuildContext context, String eventoId, String nome) {
   showDialog(
@@ -411,9 +254,9 @@ void _confirmarDelecaoEvento(BuildContext context, String eventoId, String nome)
               TextFormField(controller: l, decoration: InputDecoration(labelText: 'Localização', prefixIcon: const Icon(Icons.place_rounded), filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none)), validator: (v) => v!.isEmpty ? 'Obrigatório' : null),
               const SizedBox(height: 16),
               Row(children: [
-                Expanded(child: TextFormField(controller: d, readOnly: true, decoration: InputDecoration(labelText: 'Data', prefixIcon: const Icon(Icons.calendar_today_rounded), filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none)), onTap: () async { DateTime? date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2100), locale: const Locale('pt', 'BR')); if (date != null) d.text = _formatBrazilDate(date); }, validator: (v) => v!.isEmpty ? 'Obrigatório' : null)),
+                Expanded(child: TextFormField(controller: d, readOnly: true, decoration: InputDecoration(labelText: 'Data', prefixIcon: const Icon(Icons.calendar_today_rounded), filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none)), onTap: () async { DateTime? date = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2000), lastDate: DateTime(2100)); if (date != null) d.text = "${date.day.toString().padLeft(2,'0')}/${date.month.toString().padLeft(2,'0')}/${date.year}"; }, validator: (v) => v!.isEmpty ? 'Obrigatório' : null)),
                 const SizedBox(width: 16),
-                Expanded(child: TextFormField(controller: h, readOnly: true, decoration: InputDecoration(labelText: 'Horário', prefixIcon: const Icon(Icons.access_time_rounded), filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none)), onTap: () async { TimeOfDay? time = await showTimePicker(context: context, initialTime: TimeOfDay.now(), builder: (context, child) => MediaQuery(data: MediaQuery.of(context).copyWith(alwaysUse24HourFormat: true), child: child ?? const SizedBox.shrink()),); if (time != null && context.mounted) h.text = _formatBrazilTime(time); }, validator: (v) => v!.isEmpty ? 'Obrigatório' : null)),
+                Expanded(child: TextFormField(controller: h, readOnly: true, decoration: InputDecoration(labelText: 'Horário', prefixIcon: const Icon(Icons.access_time_rounded), filled: true, border: OutlineInputBorder(borderRadius: BorderRadius.circular(20), borderSide: BorderSide.none)), onTap: () async { TimeOfDay? time = await showTimePicker(context: context, initialTime: TimeOfDay.now()); if (time != null && context.mounted) h.text = time.format(context); }, validator: (v) => v!.isEmpty ? 'Obrigatório' : null)),
               ]),
               const SizedBox(height: 16),
               TextFormField(
