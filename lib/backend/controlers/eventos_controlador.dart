@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'dart:async';
 import 'dart:convert';
 import 'dart:math';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -6,6 +7,7 @@ import 'package:firebase_database/firebase_database.dart'; // Pacote necessário
 import '../models/evento_modelo.dart';
 import '../models/convidado_modelo.dart';
 import '../services/firebase_servico.dart';
+import 'login_controlador.dart';
 
 class SatisfactionController extends ChangeNotifier {
   static final SatisfactionController instance = SatisfactionController._();
@@ -21,6 +23,7 @@ class SatisfactionController extends ChangeNotifier {
   
   // Referência direta ao nó de eventos no Firebase para o fluxo contínuo
   final DatabaseReference _dbRef = FirebaseDatabase.instance.ref("eventos");
+  StreamSubscription<DatabaseEvent>? _subscription;
 
   // Gera um código único alfanumérico de 6 dígitos para identificação do evento
   String generateEventId() {
@@ -39,23 +42,32 @@ class SatisfactionController extends ChangeNotifier {
   void monitorarFirebase() {
     isCarregando = true;
     notifyListeners();
+    
+    // Cancel previous subscription if any to avoid duplicate listeners
+    _subscription?.cancel();
 
     // Cria um "túnel" que escuta qualquer mudança no banco em tempo real
-    _dbRef.onValue.listen((DatabaseEvent event) {
+    _subscription = _dbRef.onValue.listen((DatabaseEvent event) {
       final data = event.snapshot.value as Map<dynamic, dynamic>?;
 
       _eventos.clear();
-      
+
       if (data != null) {
+        final currentHostId = LoginControlador.instance.current?.id;
         data.forEach((key, value) {
           // Converte o valor do Firebase para um Map que o Flutter entende
           final mapaData = Map<String, dynamic>.from(value);
-          
+
           // Injeta a chave (key) do Firebase como o 'id' do evento
-          mapaData['id'] = key; 
-          
+          mapaData['id'] = key;
+
           // Usa o método fromJson que já existe no seu modelo
-          _eventos.add(Evento.fromJson(mapaData));
+          final evento = Evento.fromJson(mapaData);
+
+          // Adiciona apenas eventos do anfitrião logado
+          if (currentHostId != null && evento.anfitriaoId != null && evento.anfitriaoId == currentHostId) {
+            _eventos.add(evento);
+          }
         });
       }
 
@@ -115,16 +127,24 @@ class SatisfactionController extends ChangeNotifier {
   }
 
   // Adiciona um novo evento ou atualiza um existente no local e no Firebase
-  void salvarEvento(Evento e) async {
-    final index = _eventos.indexWhere((item) => item.id == e.id);
-    if (index != -1) {
-      _eventos[index] = e;
-    } else {
-      _eventos.add(e);
-    }
-    notifyListeners(); // Feedback imediato para o usuário
-    await _firebase.salvarEvento(e); // O Firebase receberá o dado e o Stream confirmará
-  }
+  Future<void> salvarEvento(Evento e) async {
+     final currentHost = LoginControlador.instance.current;
+     if (currentHost == null) {
+       debugPrint('Não é possível salvar evento sem anfitrião logado.');
+       return;
+     }
+
+     final index = _eventos.indexWhere((item) => item.id == e.id);
+     if (index != -1) {
+       _eventos[index] = e;
+     } else {
+       _eventos.add(e);
+     }
+     notifyListeners(); // Feedback imediato para o usuário
+
+     e.anfitriaoId = currentHost.id;
+     await _firebase.salvarEvento(e);
+   }
 
   void deletarEvento(String id) async {
     _eventos.removeWhere((e) => e.id == id);
@@ -139,6 +159,16 @@ class SatisfactionController extends ChangeNotifier {
     await _firebase.salvarEvento(evento);
   }
 
+  void editarConvidado(String eventoId, Convidado convidado) async {
+    final evento = _eventos.firstWhere((e) => e.id == eventoId);
+    final index = evento.convidados.indexWhere((c) => c.id == convidado.id);
+    if (index != -1) {
+      evento.convidados[index] = convidado;
+      notifyListeners();
+      await _firebase.salvarEvento(evento);
+    }
+  }
+
   void deletarConvidado(String eventoId, String convidadoId) async {
     final evento = _eventos.firstWhere((e) => e.id == eventoId);
     evento.convidados.removeWhere((c) => c.id == convidadoId);
@@ -148,11 +178,61 @@ class SatisfactionController extends ChangeNotifier {
 
   // Atualiza o status de presença (confirmado/recusado) de um convidado específico
   void atualizarPresenca(String eventoId, String convidadoId, PresencaStatus status) async {
-    final evento = _eventos.firstWhere((e) => e.id == eventoId);
-    final convidado = evento.convidados.firstWhere((c) => c.id == convidadoId);
-    convidado.status = status;
-    notifyListeners();
-    await _firebase.salvarEvento(evento);
+    try {
+      final evento = _eventos.firstWhere((e) => e.id == eventoId);
+      final convidado = evento.convidados.firstWhere((c) => c.id == convidadoId);
+      convidado.status = status;
+      notifyListeners();
+      await _firebase.salvarEvento(evento);
+      return;
+    } catch (_) {
+      // Evento não encontrado na lista local (provavelmente acesso via convidado). Buscar no Firebase.
+    }
+
+    try {
+      final snap = await _dbRef.child(eventoId).get();
+      if (!snap.exists) return;
+      final mapa = Map<String, dynamic>.from(snap.value as Map);
+      mapa['id'] = eventoId;
+      if (mapa['convidados'] == null) mapa['convidados'] = [];
+      final evento = Evento.fromJson(mapa);
+
+      final idx = evento.convidados.indexWhere((c) => c.id == convidadoId);
+      if (idx == -1) return;
+      evento.convidados[idx].status = status;
+
+      // Persistir alteração no Firebase
+      await _firebase.salvarEvento(evento);
+
+      // Atualizar cache local se já houver o evento carregado
+      final localIndex = _eventos.indexWhere((e) => e.id == eventoId);
+      if (localIndex != -1) {
+        _eventos[localIndex] = evento;
+        notifyListeners();
+      }
+    } catch (e) {
+      debugPrint('Erro ao atualizar presença: $e');
+    }
+  }
+
+  Future<void> editarEvento(Evento evento) async {
+    await salvarEvento(evento);
+  }
+
+  // Busca um evento diretamente no Firebase pelo código (id)
+  Future<Evento?> buscarEventoPorCodigo(String codigo) async {
+    try {
+      final snap = await _dbRef.child(codigo).get();
+      if (!snap.exists) return null;
+      final mapa = Map<String, dynamic>.from(snap.value as Map);
+      mapa['id'] = codigo;
+      // Garantir campo convidados
+      if (mapa['convidados'] == null) mapa['convidados'] = [];
+      return Evento.fromJson(mapa);
+    } catch (e) {
+      debugPrint('Erro ao buscar evento por código: $e');
+      return null;
+    }
   }
 
   // Calcula a porcentagem de convidados que já responderam (Aceitaram ou Recusaram)

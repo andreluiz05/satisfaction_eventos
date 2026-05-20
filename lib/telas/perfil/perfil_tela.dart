@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../autenticacao/login_tela.dart';
+import '../../backend/controlers/login_controlador.dart';
 
 class PerfilScreen extends StatelessWidget {
   const PerfilScreen({super.key});
@@ -46,7 +47,7 @@ class PerfilScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text('Organizador(a)', style: TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: theme.colorScheme.onSurface)),
             const SizedBox(height: 4),
-            const Text('admin@satisfaction.com', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
+            Text(LoginControlador.instance.current?.email ?? '', style: const TextStyle(color: Colors.grey, fontWeight: FontWeight.w500)),
             const SizedBox(height: 40),
             
             _menuItem(context, Icons.edit_rounded, 'Editar Dados', theme),
