@@ -33,6 +33,49 @@ class LoginControlador extends ChangeNotifier {
     await prefs.setString(_prefsKey, jsonEncode(a.toJson()));
   }
 
+  Future<void> updateCurrent({String? nome, String? email, String? password}) async {
+    if (_current == null) return;
+
+    if (nome != null && nome.isNotEmpty) {
+      _current!.nome = nome;
+    }
+    if (email != null && email.isNotEmpty) {
+      _current!.email = email;
+    }
+    if (password != null && password.isNotEmpty) {
+      _current!.setPassword(password);
+    }
+
+    try {
+      if (_current!.id != null && _current!.id!.isNotEmpty) {
+        final updateData = Map<String, dynamic>.from(_current!.toJson())..remove('id');
+        await _dbRef.child(_current!.id!).update(updateData);
+      } else {
+        await _saveOrUpdateLocalUser(_current!);
+      }
+    } catch (e) {
+      debugPrint('Falha ao atualizar usuário no Firebase: $e');
+      await _saveOrUpdateLocalUser(_current!);
+    }
+
+    await _saveCurrentToPrefs(_current!);
+    notifyListeners();
+  }
+
+  Future<void> _saveOrUpdateLocalUser(AnfitriaoModelo a) async {
+    final prefs = await SharedPreferences.getInstance();
+    final lista = await _loadLocalUsers();
+    final index = lista.indexWhere((item) =>
+        (item.id != null && item.id == a.id) || item.email == a.email);
+    if (index >= 0) {
+      lista[index] = a;
+    } else {
+      lista.add(a);
+    }
+    final jsonList = lista.map((e) => e.toJson()).toList();
+    await prefs.setString(_localUsersKey, jsonEncode(jsonList));
+  }
+
   Future<void> signOut() async {
     _current = null;
     final prefs = await SharedPreferences.getInstance();
@@ -146,5 +189,31 @@ class LoginControlador extends ChangeNotifier {
     return decoded
         .map((e) => AnfitriaoModelo.fromJson(Map<String, dynamic>.from(e)))
         .toList();
+  }
+
+  /// Verifica se já existe um anfitrião com o e-mail informado,
+  /// tanto no Firebase quanto na lista local.
+  Future<bool> emailExists(String email) async {
+    final emailLower = email.toLowerCase();
+    try {
+      final snapshot = await _dbRef.get();
+      if (snapshot.exists) {
+        final dados = snapshot.value as Map;
+        for (final key in dados.keys) {
+          final mapa = Map<String, dynamic>.from(dados[key] as Map);
+          final e = (mapa['email'] as String?)?.toLowerCase();
+          if (e != null && e == emailLower) return true;
+        }
+      }
+    } catch (e) {
+      debugPrint('Erro ao verificar e-mail no Firebase: $e');
+    }
+
+    final local = await _loadLocalUsers();
+    for (final anfit in local) {
+      if (anfit.email.toLowerCase() == emailLower) return true;
+    }
+
+    return false;
   }
 }

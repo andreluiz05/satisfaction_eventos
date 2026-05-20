@@ -41,6 +41,26 @@ class _CadastroScreenState extends State<CadastroScreen> {
       final email = _emailController.text.trim();
       final senha = _senhaController.text.trim();
 
+      // Verifica se já existe conta com este e-mail
+      final existe = await LoginControlador.instance.emailExists(email);
+      if (existe) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: const Text(
+              'Já existe uma conta com esse e-mail.',
+              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            ),
+            backgroundColor: Colors.redAccent,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(10),
+            ),
+          ),
+        );
+        return;
+      }
+
       // Envia os dados para o NOVO controlador criptografado
       await LoginControlador.instance.register(nome, email, senha);
 

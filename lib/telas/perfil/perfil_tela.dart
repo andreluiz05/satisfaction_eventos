@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../autenticacao/login_tela.dart';
 import '../../backend/controlers/login_controlador.dart';
+import 'editar_dados.dart';
+import 'privacidade_senha_tela.dart';
 import 'sobre_app_tela.dart';
 import 'suporte_ajuda_tela.dart';
 
@@ -74,12 +76,31 @@ class PerfilScreen extends StatelessWidget {
             ),
             const SizedBox(height: 40),
 
-            _menuItem(context, Icons.edit_rounded, 'Editar Dados', theme),
+            _menuItem(
+              context,
+              Icons.edit_rounded,
+              'Editar Dados',
+              theme,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const EditarDadosPage()),
+                );
+              },
+            ),
             _menuItem(
               context,
               Icons.security_rounded,
               'Privacidade e Senha',
               theme,
+              onTap: () {
+                HapticFeedback.lightImpact();
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(builder: (_) => const PrivacidadeSenhaScreen()),
+                );
+              },
             ),
             Container(
               margin: const EdgeInsets.only(bottom: 12),
@@ -198,8 +219,9 @@ class PerfilScreen extends StatelessWidget {
     BuildContext context,
     IconData icon,
     String title,
-    ThemeData theme,
-  ) {
+    ThemeData theme, {
+    VoidCallback? onTap,
+  }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
@@ -230,7 +252,7 @@ class PerfilScreen extends StatelessWidget {
           ),
         ),
         trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
-        onTap: () {
+        onTap: onTap ?? () {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(
               content: Text('Função disponível na versão premium.'),

@@ -14,7 +14,7 @@ class LoginScreen extends StatefulWidget {
 }
 
 class _LoginScreenState extends State<LoginScreen> {
-  bool isAnfitriao = true;
+  bool isAnfitriao = false;
 
   // Variável para controlar a visibilidade da senha
   bool _ocultarSenha = true;
@@ -182,13 +182,13 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           child: Row(
                             children: [
-                              _loginTab("Anfitrião", isAnfitriao, () {
-                                HapticFeedback.selectionClick();
-                                setState(() => isAnfitriao = true);
-                              }),
                               _loginTab("Convidado", !isAnfitriao, () {
                                 HapticFeedback.selectionClick();
                                 setState(() => isAnfitriao = false);
+                              }),
+                              _loginTab("Anfitrião", isAnfitriao, () {
+                                HapticFeedback.selectionClick();
+                                setState(() => isAnfitriao = true);
                               }),
                             ],
                           ),

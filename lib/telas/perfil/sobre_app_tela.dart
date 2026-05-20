@@ -100,7 +100,7 @@ class SobreAppScreen extends StatelessWidget {
             _buildDevCard('André Luiz', 'Fundador & Desenvolvedor', Icons.rocket_launch_rounded),
             const SizedBox(height: 12),
             // Ênio Enrique
-            _buildDevCard('Ênio Enrique', 'Desenvolvedor', Icons.code_rounded),
+            _buildDevCard('Enio Enrique', 'Desenvolvedor', Icons.code_rounded),
             const SizedBox(height: 12),
             // Emerson
             _buildDevCard('Emerson', 'Desenvolvedor', Icons.code_rounded),
