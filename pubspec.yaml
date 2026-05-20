@@ -16,6 +16,7 @@ dependencies:
   http: ^1.6.0
   firebase_database: ^12.4.0
   bcrypt: ^1.2.0
+  url_launcher: ^6.3.1
 
 dev_dependencies:
   flutter_test:
@@ -33,4 +34,6 @@ flutter:
   uses-material-design: true
 
   assets:
-    - assets/imagens/logo_marca.png 
+    - assets/imagens/logo_marca.png
+    - assets/imagens/tecalli_tecnologia.png
+

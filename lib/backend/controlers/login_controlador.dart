@@ -41,11 +41,20 @@ class LoginControlador extends ChangeNotifier {
   }
 
   /// Registra um novo anfitrião. Tenta salvar no Firebase; em caso de falha salva localmente.
-  Future<AnfitriaoModelo> register(String email, String password) async {
+  Future<AnfitriaoModelo> register(
+    String nome,
+    String email,
+    String password,
+  ) async {
     isCarregando = true;
     notifyListeners();
 
-    final novo = AnfitriaoModelo.create(email: email, password: password);
+    // Agora passa o nome!
+    final novo = AnfitriaoModelo.create(
+      nome: nome,
+      email: email,
+      password: password,
+    );
 
     try {
       final newRef = _dbRef.push();
@@ -70,26 +79,38 @@ class LoginControlador extends ChangeNotifier {
     notifyListeners();
 
     try {
-      final snapshot = await _dbRef.orderByChild('email').equalTo(email).get();
+      // Busca a lista inteira para evitar o erro de Indexação do Firebase
+      final snapshot = await _dbRef.get();
 
       if (snapshot.exists) {
-        final dados = snapshot.value as Map<dynamic, dynamic>;
-        for (final entry in dados.entries) {
-          final key = entry.key.toString();
-          final mapa = Map<String, dynamic>.from(entry.value);
-          mapa['id'] = key;
-          final anfitriao = AnfitriaoModelo.fromJson(mapa);
-          if (anfitriao.verifyPassword(password)) {
-            _current = anfitriao;
-            await _saveCurrentToPrefs(anfitriao);
-            isCarregando = false;
-            notifyListeners();
-            return anfitriao;
+        // Usamos 'as Map' puro para evitar erros de tipagem no Flutter Web
+        final dados = snapshot.value as Map;
+        
+        for (final key in dados.keys) {
+          final mapa = Map<String, dynamic>.from(dados[key] as Map);
+          mapa['id'] = key.toString();
+          
+          // Filtra o e-mail manualmente no código
+          if (mapa['email'] == email) {
+            final anfitriao = AnfitriaoModelo.fromJson(mapa);
+            
+            // Verifica se a senha digitada bate com a criptografada
+            if (anfitriao.verifyPassword(password)) {
+              _current = anfitriao;
+              await _saveCurrentToPrefs(anfitriao);
+              isCarregando = false;
+              notifyListeners();
+              return anfitriao;
+            } else {
+              // Encontrou o e-mail, mas a senha está errada
+              break; 
+            }
           }
         }
       }
-    } catch (_) {
-      // ignore and fallback to local
+    } catch (e) {
+      // Agora, se algo der errado, veremos no console!
+      debugPrint("Erro detalhado no login do Firebase: $e");
     }
 
     // fallback: procurar na lista local
@@ -108,7 +129,7 @@ class LoginControlador extends ChangeNotifier {
     notifyListeners();
     return null;
   }
-
+  
   Future<void> _saveLocalUser(AnfitriaoModelo a) async {
     final prefs = await SharedPreferences.getInstance();
     final lista = await _loadLocalUsers();
@@ -122,25 +143,8 @@ class LoginControlador extends ChangeNotifier {
     final jsonString = prefs.getString(_localUsersKey);
     if (jsonString == null || jsonString.isEmpty) return [];
     final decoded = jsonDecode(jsonString) as List<dynamic>;
-    return decoded.map((e) => AnfitriaoModelo.fromJson(Map<String, dynamic>.from(e))).toList();
-  }
-
-  Future<AnfitriaoModelo> loginAsAdmin() async {
-    final localUsers = await _loadLocalUsers();
-    for (final user in localUsers) {
-      if (user.email == 'admin') {
-        _current = user;
-        await _saveCurrentToPrefs(user);
-        notifyListeners();
-        return user;
-      }
-    }
-
-    final admin = AnfitriaoModelo.create(id: 'admin', email: 'admin@eventos.com', password: '123');
-    _current = admin;
-    await _saveCurrentToPrefs(admin);
-    await _saveLocalUser(admin);
-    notifyListeners();
-    return admin;
+    return decoded
+        .map((e) => AnfitriaoModelo.fromJson(Map<String, dynamic>.from(e)))
+        .toList();
   }
 }
