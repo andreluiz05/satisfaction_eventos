@@ -2,6 +2,10 @@ import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_database/firebase_database.dart';
+//RESPONSAVEIS PELO ESQUECEU SENHA "EMAILJS"
+import 'dart:math'; 
+import 'package:http/http.dart' as http;
+// ----------------------------------
 
 import '../models/anfitriao_modelo.dart';
 
@@ -215,5 +219,92 @@ class LoginControlador extends ChangeNotifier {
     }
 
     return false;
+  }
+  /// Verifica se o e-mail existe no banco de dados
+  Future<bool> verificarEmailParaRecuperacao(String email) async {
+    isCarregando = true;
+    notifyListeners();
+
+    try {
+      final snapshot = await _dbRef.get();
+
+      if (snapshot.exists) {
+        final dados = snapshot.value as Map;
+        for (final key in dados.keys) {
+          final mapa = Map<String, dynamic>.from(dados[key] as Map);
+          if (mapa['email'] == email) {
+            isCarregando = false;
+            notifyListeners();
+            return true; 
+          }
+        }
+      }
+    } catch (e) {
+      debugPrint("Erro ao verificar email: $e");
+    }
+
+    isCarregando = false;
+    notifyListeners();
+    return false; 
+  }
+
+  /// Gera uma senha temporária, atualiza no Firebase (com Bcrypt) e envia via EmailJS
+  Future<bool> enviarEmailRecuperacao(String email) async {
+    isCarregando = true;
+    notifyListeners();
+
+    try {
+      final snapshot = await _dbRef.get();
+      String? anfitriaoId;
+      AnfitriaoModelo? anfitriaoEncontrado;
+
+      if (snapshot.exists) {
+        final dados = snapshot.value as Map;
+        for (final key in dados.keys) {
+          final mapa = Map<String, dynamic>.from(dados[key] as Map);
+          if (mapa['email'] == email) {
+            anfitriaoId = key.toString();
+            mapa['id'] = anfitriaoId;
+            anfitriaoEncontrado = AnfitriaoModelo.fromJson(mapa);
+            break;
+          }
+        }
+      }
+
+      if (anfitriaoId != null && anfitriaoEncontrado != null) {
+        final random = Random();
+        final novaSenha = (100000 + random.nextInt(900000)).toString();
+
+        anfitriaoEncontrado.setPassword(novaSenha);
+        await _dbRef.child(anfitriaoId).update({
+          'passwordHash': anfitriaoEncontrado.passwordHash
+        });
+
+        final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
+        final response = await http.post(
+          url,
+          headers: {'Content-Type': 'application/json'},
+          body: json.encode({
+            'service_id': 'gmailsatisfactionevents',
+            'template_id': 'template_a70by6s', //
+            'user_id': '-adY6aDjf0UMS5YWN',
+            'template_params': {
+              'to_email': email,
+              'temp_password': novaSenha,
+            }
+          }),
+        );
+
+        isCarregando = false;
+        notifyListeners();
+        return response.statusCode == 200;
+      }
+    } catch (e) {
+      debugPrint("Erro ao recuperar senha: $e");
+    }
+
+    isCarregando = false;
+    notifyListeners();
+    return false; 
   }
 }

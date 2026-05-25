@@ -4,6 +4,7 @@ class Evento {
   String id, nome, local, data, horario, descricao; // <-- Adicionamos a descrição aqui
   List<Convidado> convidados;
   String? anfitriaoId; // id do usuário que criou/é dono do evento
+  String? imagemFundoLocal; // Vai guardar o caminho da foto no celular-imagem guardada em cache local do dispositivo
   
   Evento({
     required this.id, 
@@ -14,6 +15,7 @@ class Evento {
     required this.convidados,
     this.descricao = '', // Padrão é vazio caso o usuário não preencha
     this.anfitriaoId,
+    this.imagemFundoLocal,
   });
 
   Map<String, dynamic> toJson() => {
@@ -31,7 +33,7 @@ class Evento {
     horario: json['horario'],
     descricao: json['descricao'] ?? '', // <-- Lendo do cache (ou vazio se for antigo)
     anfitriaoId: json['anfitriaoId'] as String?,
-    // A mágica acontece na linha abaixo: Map<String, dynamic>.from(c)
+    imagemFundoLocal: json['imagemFundoLocal'] as String?, // Lendo o caminho da imagem do cache (ou null se não tiver)
     convidados: json['convidados'] != null 
         ? (json['convidados'] as List).map((c) => Convidado.fromJson(Map<String, dynamic>.from(c as Map))).toList()
         : [],

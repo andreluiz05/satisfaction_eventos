@@ -6,6 +6,7 @@ import '../eventos/confirmacao_presenca_tela.dart';
 import '../../backend/controllers/eventos_controlador.dart'; // Importante para buscar os eventos
 import '../../backend/controllers/login_controlador.dart';
 import 'cadastro_tela.dart';
+import 'recuperar_senha_tela.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -228,11 +229,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               TextButton(
                                 onPressed: () {
-                                  ScaffoldMessenger.of(context).showSnackBar(
-                                    const SnackBar(
-                                      content: Text(
-                                        'Instruções enviadas para o e-mail!',
-                                      ),
+                                  HapticFeedback.lightImpact();
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (_) =>
+                                          const RecuperarSenhaScreen(),
                                     ),
                                   );
                                 },
@@ -290,7 +292,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 borderRadius: BorderRadius.circular(20),
                               ),
                             ),
-                            onPressed: _fazerLogin, // Função ativada aqui
+                            onPressed: _fazerLogin,
                             child: const Text(
                               'ENTRAR',
                               style: TextStyle(
@@ -343,14 +345,14 @@ class _LoginScreenState extends State<LoginScreen> {
     IconData i, {
     bool obscure = false,
     TextEditingController? controller,
-    Widget? suffixIcon, // <-- Agora a função aceita receber o ícone
+    Widget? suffixIcon,
   }) => TextField(
     controller: controller,
     obscureText: obscure,
     style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
     decoration: InputDecoration(
       prefixIcon: Icon(i, color: Colors.white70),
-      suffixIcon: suffixIcon, // <-- E renderiza ele aqui no canto direito
+      suffixIcon: suffixIcon,
       labelText: l,
       labelStyle: const TextStyle(color: Colors.white60),
       filled: true,
