@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../../backend/controlers/login_controlador.dart';
+import '../../backend/controllers/login_controlador.dart';
 import 'privacidade_senha_tela.dart';
 
 class EditarDadosPage extends StatefulWidget {

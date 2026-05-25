@@ -3,8 +3,8 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'backend/services/firebase_options.dart'; // Arquivo gerado pelo FlutterFire CLI
 
-import 'backend/controlers/eventos_controlador.dart';
-import 'backend/controlers/login_controlador.dart';
+import 'backend/controllers/eventos_controlador.dart';
+import 'backend/controllers/login_controlador.dart';
 import 'telas/autenticacao/login_tela.dart';
 
 void main() async {

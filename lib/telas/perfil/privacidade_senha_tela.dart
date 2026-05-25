@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 
-import '../../backend/controlers/login_controlador.dart';
+import '../../backend/controllers/login_controlador.dart';
 
 class PrivacidadeSenhaScreen extends StatefulWidget {
   const PrivacidadeSenhaScreen({super.key});

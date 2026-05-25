@@ -3,8 +3,8 @@ import 'package:flutter/services.dart';
 import 'dart:ui';
 import '../navegacao/navegacao_principal_tela.dart';
 import '../eventos/confirmacao_presenca_tela.dart';
-import '../../backend/controlers/eventos_controlador.dart'; // Importante para buscar os eventos
-import '../../backend/controlers/login_controlador.dart';
+import '../../backend/controllers/eventos_controlador.dart'; // Importante para buscar os eventos
+import '../../backend/controllers/login_controlador.dart';
 import 'cadastro_tela.dart';
 
 class LoginScreen extends StatefulWidget {

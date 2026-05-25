@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../autenticacao/login_tela.dart';
-import '../../backend/controlers/login_controlador.dart';
+import '../../backend/controllers/login_controlador.dart';
 import 'editar_dados.dart';
 import 'privacidade_senha_tela.dart';
 import 'sobre_app_tela.dart';

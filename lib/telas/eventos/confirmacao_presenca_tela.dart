@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-import '../../backend/controlers/eventos_controlador.dart';
+import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart';
 import '../autenticacao/login_tela.dart';

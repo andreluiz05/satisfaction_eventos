@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
 // Importação do controlador de login para realizar o cadastro com segurança usando bcrypt no Firebase
-import '../../backend/controlers/login_controlador.dart';
+import '../../backend/controllers/login_controlador.dart';
 
 class CadastroScreen extends StatefulWidget {
   const CadastroScreen({super.key});
