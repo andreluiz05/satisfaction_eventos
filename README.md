@@ -16,34 +16,34 @@
 
 O **Satisfaction Eventos** é uma solução robusta para organização de eventos, permitindo gestão de convidados e controle de presença em tempo real. O sistema foi projetado para oferecer alta performance e segurança, permitindo aos anfitriões gerir eventos com identidade visual própria (via integração com API ImgBB) e total controle sobre seus dados.
 
-Este projeto foi desenvolvido como requisito avaliativo para o curso de **Análise e Desenvolvimento de Sistemas (ADS)** da Uninassau.
+Este projeto foi desenvolvido como requisito avaliativo para o curso de **Análise e Desenvolvimento de Sistemas (ADS)** da Uninassau[cite: 3].
 
 ## ✨ Funcionalidades Principais
 
-- **☁️ Gestão de Imagens em Nuvem:** Upload de banners customizáveis (ImgBB) com suporte a alinhamento vertical, *toggles* de redimensionamento e exclusão física automática.
-- **🔒 Segurança Avançada:** Proteção de senhas com *hashing* nativo (`bcrypt`) e fluxo completo de recuperação de senha via integração EmailJS.
-- **⚡ Tempo Real:** Sincronização instantânea de dados via Firebase Realtime Database (`onValue.listen`).
-- **🌐 Suporte Multiplataforma:** Experiência otimizada para Android, iOS e Web.
-- **👥 Controle Total:** Gestão de convidados com exclusão em cascata (remover conta apaga todos os dados vinculados).
+- **☁️ Gestão de Imagens em Nuvem:** Upload de banners customizáveis (ImgBB) com suporte a alinhamento vertical e exclusão automática.
+- **🔒 Segurança Avançada:** Proteção de senhas com *hashing* (`bcrypt`) e fluxo de recuperação via API EmailJS.
+- **⚡ Tempo Real:** Sincronização instantânea de dados via Firebase Realtime Database[cite: 3].
+- **🌐 Suporte Multiplataforma:** Experiência otimizada para Android, iOS e Web[cite: 3].
+- **👥 Controle Total:** Gestão de convidados com exclusão em cascata.
 - **🌗 Tema Dinâmico:** Suporte a Modo Claro e Modo Escuro com design *Glassmorphism*.
 
 ## 🛠️ Tecnologias e Arquitetura
 
-O sistema segue padrões rigorosos de engenharia de software para garantir escalabilidade:
+O sistema segue padrões rigorosos de engenharia de software[cite: 3]:
 
 * **Framework:** Flutter (Dart)
 * **Backend:** Firebase (Realtime Database & Authentication)
-* **APIs de Terceiros:** ImgBB (Imagens), EmailJS (E-mails)
-* **Arquitetura:** Padrão **MVC** (Model-View-Controller) com separação clara entre as camadas:
-    * **Models:** Estruturas de dados (Anfitrião, Evento, Convidado).
-    * **Controllers:** Regras de negócio e sincronização de estado.
-    * **Services:** Integração com APIs externas e Firebase.
-    * **Views:** Telas e interface do usuário (UI).
+* **APIs de Terceiros:** ImgBB, EmailJS
+* **Arquitetura:** Padrão **MVC** (Model-View-Controller) com separação em camadas (`Controllers`, `Services`, `Models`)[cite: 3].
 
-## 🚀 Como Executar o Projeto
+## 🚀 Passo a Passo para Executar o Projeto
 
-Para clonar e rodar este aplicativo localmente:
+### 1. Pré-requisitos
+Certifique-se de ter instalado:
+- [Git](https://git-scm.com/)
+- [Flutter SDK](https://flutter.dev/docs/get-started/install) (versão >= 3.8.1)
+- IDE de sua preferência (VS Code ou Android Studio)
 
-1. **Clone este repositório:**
-   ```bash
-   git clone [https://github.com/andreluiz05/satisfaction_eventos.git](https://github.com/andreluiz05/satisfaction_eventos.git)
+### 2. Clonando o Repositório
+```bash
+git clone [https://github.com/andreluiz05/satisfaction_eventos.git](https://github.com/andreluiz05/satisfaction_eventos.git)
