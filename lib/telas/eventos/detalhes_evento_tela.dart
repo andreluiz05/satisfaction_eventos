@@ -1,9 +1,12 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/controllers/login_controlador.dart';
 import '../../backend/models/convidado_modelo.dart';
 import '../../backend/models/evento_modelo.dart';
+import '../../backend/services/imgbb_servico.dart';
+import 'package:image_picker/image_picker.dart';
 import 'dart:io';
 
 class EventDetail extends StatelessWidget {
@@ -91,13 +94,7 @@ class EventDetail extends StatelessWidget {
                   background: Stack(
                     fit: StackFit.expand,
                     children: [
-                      // ADICIONE ESTAS DUAS LINHAS PARA CARREGAR A FOTO LOCAL:
-                      if (evento.imagemFundoLocal != null &&
-                          evento.imagemFundoLocal!.isNotEmpty)
-                        Image.file(
-                          File(evento.imagemFundoLocal!),
-                          fit: BoxFit.cover,
-                        ),
+                      _eventBackgroundImage(evento),
 
                       // ALTERE O SEU CONTAINER PARA USAR DEGRADÊ COM TRANSPARÊNCIA (withAlpha):
                       Container(
@@ -112,17 +109,19 @@ class EventDetail extends StatelessWidget {
                           ),
                         ),
                       ),
-                      Positioned(
-                        bottom: -40,
-                        right: 560,
-                        child: Opacity(
-                          opacity: 0.15,
-                          child: Image.asset(
-                            'assets/imagens/logo_marca.png',
-                            height: 250,
+                      if (evento.imagemFundoUrl == null ||
+                          evento.imagemFundoUrl!.isEmpty)
+                        Positioned(
+                          bottom: -40,
+                          right: 560,
+                          child: Opacity(
+                            opacity: 0.15,
+                            child: Image.asset(
+                              'assets/imagens/logo_marca.png',
+                              height: 250,
+                            ),
                           ),
                         ),
-                      ),
                       Padding(
                         padding: const EdgeInsets.fromLTRB(24, 100, 24, 0),
                         child: Column(
@@ -656,6 +655,79 @@ class EventDetail extends StatelessWidget {
     _showGuestDialog(context, evento.id, convidado);
   }
 
+  Widget _eventBackgroundImage(Evento evento) {
+    final imageUrl = evento.imagemFundoUrl;
+    if (imageUrl == null || imageUrl.isEmpty) return const SizedBox.shrink();
+
+    final alignment = Alignment(0, evento.imagemFundoAlinhamentoY);
+
+    Widget image({required BoxFit fit}) {
+      if (imageUrl.startsWith('http')) {
+        return Image.network(imageUrl, fit: fit, alignment: alignment);
+      }
+      if (kIsWeb) return const SizedBox.shrink();
+      return Image.file(File(imageUrl), fit: fit, alignment: alignment);
+    }
+
+    if (!evento.imagemFundoMostrarInteira) {
+      return image(fit: BoxFit.cover);
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        image(fit: BoxFit.cover),
+        Container(color: Colors.black.withAlpha(80)),
+        image(fit: BoxFit.contain),
+      ],
+    );
+  }
+
+  Widget _imageFitControls({
+    required bool hasImage,
+    required bool mostrarFotoInteira,
+    required double alinhamentoFotoY,
+    required ValueChanged<bool> onMostrarFotoInteiraChanged,
+    required ValueChanged<double> onAlinhamentoFotoChanged,
+  }) {
+    if (!hasImage) return const SizedBox.shrink();
+
+    String sliderLabel(double value) {
+      if (value <= -0.5) return 'Topo';
+      if (value >= 0.5) return 'Base';
+      return 'Centro';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text(
+            'Mostrar foto inteira',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          value: mostrarFotoInteira,
+          onChanged: onMostrarFotoInteiraChanged,
+        ),
+        if (!mostrarFotoInteira) ...[
+          Text(
+            'Posição vertical: ${sliderLabel(alinhamentoFotoY)}',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          Slider(
+            value: alinhamentoFotoY,
+            min: -1,
+            max: 1,
+            divisions: 4,
+            label: sliderLabel(alinhamentoFotoY),
+            onChanged: onAlinhamentoFotoChanged,
+          ),
+        ],
+      ],
+    );
+  }
+
   void _showEditEventDialog(BuildContext context, Evento evento) {
     final formKey = GlobalKey<FormState>();
     final nome = TextEditingController(text: evento.nome);
@@ -663,6 +735,11 @@ class EventDetail extends StatelessWidget {
     final data = TextEditingController(text: evento.data);
     final horario = TextEditingController(text: evento.horario);
     final desc = TextEditingController(text: evento.descricao);
+    String? caminhoImagemSelecionada = evento.imagemFundoUrl;
+    String? deleteUrlImagemSelecionada = evento.imagemFundoDeleteUrl;
+    bool mostrarFotoInteira = evento.imagemFundoMostrarInteira;
+    double alinhamentoFotoY = evento.imagemFundoAlinhamentoY;
+    bool isUploading = false;
 
     showDialog(
       context: context,
@@ -672,12 +749,155 @@ class EventDetail extends StatelessWidget {
           'Editar Evento',
           style: TextStyle(fontWeight: FontWeight.w900),
         ),
-        content: Form(
-          key: formKey,
-          child: SingleChildScrollView(
+        content: StatefulBuilder(
+          builder: (context, setStateDialog) {
+            Future<void> escolherImagem() async {
+              final picker = ImagePicker();
+              final pickedFile = await picker.pickImage(
+                source: ImageSource.gallery,
+              );
+
+              if (pickedFile == null) return;
+
+              setStateDialog(() => isUploading = true);
+              final upload = await ImgbbServico.uploadImageBytes(
+                await pickedFile.readAsBytes(),
+              );
+
+              setStateDialog(() {
+                if (upload != null) {
+                  caminhoImagemSelecionada = upload.url;
+                  deleteUrlImagemSelecionada = upload.deleteUrl;
+                }
+                isUploading = false;
+              });
+            }
+
+            return Form(
+              key: formKey,
+              child: SingleChildScrollView(
             child: Column(
               mainAxisSize: MainAxisSize.min,
               children: [
+                GestureDetector(
+                  onTap: escolherImagem,
+                  child: Container(
+                    height: 140,
+                    width: double.infinity,
+                    decoration: BoxDecoration(
+                      color: Colors.grey.withAlpha(25),
+                      borderRadius: BorderRadius.circular(16),
+                      border: Border.all(
+                        color: Colors.grey.withAlpha(51),
+                        width: 2,
+                      ),
+                      image:
+                          caminhoImagemSelecionada != null &&
+                              caminhoImagemSelecionada!.isNotEmpty &&
+                              (caminhoImagemSelecionada!.startsWith('http') ||
+                                  !kIsWeb)
+                          ? DecorationImage(
+                              image:
+                                  caminhoImagemSelecionada!.startsWith('http')
+                                  ? NetworkImage(caminhoImagemSelecionada!)
+                                        as ImageProvider
+                                  : FileImage(File(caminhoImagemSelecionada!)),
+                              fit: mostrarFotoInteira
+                                  ? BoxFit.contain
+                                  : BoxFit.cover,
+                              alignment: Alignment(0, alinhamentoFotoY),
+                            )
+                          : null,
+                    ),
+                    child: isUploading
+                        ? const Center(child: CircularProgressIndicator())
+                        : caminhoImagemSelecionada == null ||
+                              caminhoImagemSelecionada!.isEmpty
+                        ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              Icon(
+                                Icons.add_a_photo_rounded,
+                                size: 34,
+                                color: Colors.grey,
+                              ),
+                              SizedBox(height: 8),
+                              Text(
+                                'Adicionar foto de fundo',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
+                          )
+                        : Align(
+                            alignment: Alignment.topRight,
+                            child: Padding(
+                              padding: const EdgeInsets.all(8),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  CircleAvatar(
+                                    backgroundColor: Colors.black54,
+                                    radius: 18,
+                                    child: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      icon: const Icon(
+                                        Icons.edit,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                      onPressed: escolherImagem,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 8),
+                                  CircleAvatar(
+                                    backgroundColor: Colors.redAccent,
+                                    radius: 18,
+                                    child: IconButton(
+                                      padding: EdgeInsets.zero,
+                                      icon: const Icon(
+                                        Icons.close,
+                                        color: Colors.white,
+                                        size: 18,
+                                      ),
+                                      onPressed: () {
+                                        if (evento.imagemFundoUrl !=
+                                                caminhoImagemSelecionada &&
+                                            evento.imagemFundoDeleteUrl !=
+                                                deleteUrlImagemSelecionada) {
+                                          ImgbbServico.deleteImage(
+                                            deleteUrlImagemSelecionada,
+                                          );
+                                        }
+                                        setStateDialog(() {
+                                          caminhoImagemSelecionada = null;
+                                          deleteUrlImagemSelecionada = null;
+                                        });
+                                      },
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                _imageFitControls(
+                  hasImage: caminhoImagemSelecionada != null &&
+                      caminhoImagemSelecionada!.isNotEmpty,
+                  mostrarFotoInteira: mostrarFotoInteira,
+                  alinhamentoFotoY: alinhamentoFotoY,
+                  onMostrarFotoInteiraChanged: (value) {
+                    setStateDialog(() => mostrarFotoInteira = value);
+                  },
+                  onAlinhamentoFotoChanged: (value) {
+                    setStateDialog(() => alinhamentoFotoY = value);
+                  },
+                ),
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: nome,
                   decoration: InputDecoration(
@@ -781,10 +1001,18 @@ class EventDetail extends StatelessWidget {
               ],
             ),
           ),
+        );
+          },
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (evento.imagemFundoUrl != caminhoImagemSelecionada &&
+                  evento.imagemFundoDeleteUrl != deleteUrlImagemSelecionada) {
+                ImgbbServico.deleteImage(deleteUrlImagemSelecionada);
+              }
+              Navigator.pop(context);
+            },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
@@ -805,9 +1033,15 @@ class EventDetail extends StatelessWidget {
                   descricao: desc.text,
                   convidados: evento.convidados,
                   anfitriaoId: evento.anfitriaoId,
-                  imagemFundoLocal: evento.imagemFundoLocal,
+                  imagemFundoUrl: caminhoImagemSelecionada,
+                  imagemFundoDeleteUrl: deleteUrlImagemSelecionada,
+                  imagemFundoMostrarInteira: mostrarFotoInteira,
+                  imagemFundoAlinhamentoY: alinhamentoFotoY,
                 );
                 SatisfactionController.instance.editarEvento(updated);
+                if (evento.imagemFundoUrl != caminhoImagemSelecionada) {
+                  ImgbbServico.deleteImage(evento.imagemFundoDeleteUrl);
+                }
                 Navigator.pop(context);
               }
             },

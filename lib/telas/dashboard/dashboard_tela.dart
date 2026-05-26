@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/controllers/login_controlador.dart';
@@ -6,11 +7,13 @@ import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart';
 import '../eventos/detalhes_evento_tela.dart';
 
-//IMPORT ADICIONAIS PARA MANIPULAÇÃO DE IMAGENS E ARMAZENAMENTO LOCAL
+//IMPORT ADICIONAIS PARA MANIPULAÇÃO DE IMAGENS E INTEGRAÇÃO COM O ImgBB
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:path_provider/path_provider.dart';
+
 // -----------------------------------------------
+// IMPORT DO SERVIÇO DE UPLOAD DE IMAGENS PARA O ImgBB
+import '../../backend/services/imgbb_servico.dart';
 
 class Dashboard extends StatelessWidget {
   const Dashboard({super.key});
@@ -281,16 +284,29 @@ class Dashboard extends StatelessWidget {
               child: Row(
                 children: [
                   Container(
-                    padding: const EdgeInsets.all(16),
+                    width: 64,
+                    height: 64,
+                    clipBehavior: Clip.antiAlias,
                     decoration: BoxDecoration(
                       color: theme.colorScheme.primary.withAlpha(25),
                       borderRadius: BorderRadius.circular(20),
                     ),
-                    child: Icon(
-                      Icons.confirmation_num_rounded,
-                      color: theme.colorScheme.primary,
-                      size: 28,
-                    ),
+                    child: e.imagemFundoUrl != null &&
+                            e.imagemFundoUrl!.isNotEmpty &&
+                            e.imagemFundoUrl!.startsWith('http')
+                        ? Image.network(
+                            e.imagemFundoUrl!,
+                            fit: BoxFit.cover,
+                            alignment: Alignment(
+                              0,
+                              e.imagemFundoAlinhamentoY,
+                            ),
+                          )
+                        : Icon(
+                            Icons.confirmation_num_rounded,
+                            color: theme.colorScheme.primary,
+                            size: 28,
+                          ),
                   ),
                   const SizedBox(width: 20),
                   Expanded(
@@ -393,6 +409,51 @@ class Dashboard extends StatelessWidget {
         ),
       );
 
+  Widget _imageFitControls({
+    required bool hasImage,
+    required bool mostrarFotoInteira,
+    required double alinhamentoFotoY,
+    required ValueChanged<bool> onMostrarFotoInteiraChanged,
+    required ValueChanged<double> onAlinhamentoFotoChanged,
+  }) {
+    if (!hasImage) return const SizedBox.shrink();
+
+    String sliderLabel(double value) {
+      if (value <= -0.5) return 'Topo';
+      if (value >= 0.5) return 'Base';
+      return 'Centro';
+    }
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        SwitchListTile(
+          contentPadding: EdgeInsets.zero,
+          title: const Text(
+            'Mostrar foto inteira',
+            style: TextStyle(fontWeight: FontWeight.w700),
+          ),
+          value: mostrarFotoInteira,
+          onChanged: onMostrarFotoInteiraChanged,
+        ),
+        if (!mostrarFotoInteira) ...[
+          Text(
+            'Posição vertical: ${sliderLabel(alinhamentoFotoY)}',
+            style: const TextStyle(fontWeight: FontWeight.w600),
+          ),
+          Slider(
+            value: alinhamentoFotoY,
+            min: -1,
+            max: 1,
+            divisions: 4,
+            label: sliderLabel(alinhamentoFotoY),
+            onChanged: onAlinhamentoFotoChanged,
+          ),
+        ],
+      ],
+    );
+  }
+
   void _showEditEventDialog(BuildContext context, Evento evento) {
     final formKey = GlobalKey<FormState>();
     final nome = TextEditingController(text: evento.nome);
@@ -402,7 +463,11 @@ class Dashboard extends StatelessWidget {
     final desc = TextEditingController(text: evento.descricao);
 
     // Puxa a imagem atual que já estava no banco
-    String? caminhoImagemSelecionada = evento.imagemFundoLocal;
+    String? caminhoImagemSelecionada = evento.imagemFundoUrl;
+    String? deleteUrlImagemSelecionada = evento.imagemFundoDeleteUrl;
+    bool mostrarFotoInteira = evento.imagemFundoMostrarInteira;
+    double alinhamentoFotoY = evento.imagemFundoAlinhamentoY;
+    bool isUploading = false;
 
     showDialog(
       context: context,
@@ -420,15 +485,21 @@ class Dashboard extends StatelessWidget {
                 source: ImageSource.gallery,
               );
               if (pickedFile != null) {
-                final diretorioApp = await getApplicationDocumentsDirectory();
-                final nomeArquivo =
-                    '${DateTime.now().millisecondsSinceEpoch}.png';
-                final imagemSalva = await File(
-                  pickedFile.path,
-                ).copy('${diretorioApp.path}/$nomeArquivo');
+                setStateDialog(
+                  () => isUploading = true,
+                ); // Mostra o carregamento
+
+                // Envia para a nuvem em vez de copiar para a pasta local
+                final upload = await ImgbbServico.uploadImageBytes(
+                  await pickedFile.readAsBytes(),
+                );
 
                 setStateDialog(() {
-                  caminhoImagemSelecionada = imagemSalva.path;
+                  if (upload != null) {
+                    caminhoImagemSelecionada = upload.url;
+                    deleteUrlImagemSelecionada = upload.deleteUrl;
+                  }
+                  isUploading = false; // Esconde o carregamento
                 });
               }
             }
@@ -453,17 +524,33 @@ class Dashboard extends StatelessWidget {
                           ),
                           image:
                               caminhoImagemSelecionada != null &&
-                                  caminhoImagemSelecionada!.isNotEmpty
+                                  caminhoImagemSelecionada!.isNotEmpty &&
+                                  (caminhoImagemSelecionada!.startsWith(
+                                        'http',
+                                      ) ||
+                                      !kIsWeb)
                               ? DecorationImage(
-                                  image: FileImage(
-                                    File(caminhoImagemSelecionada!),
-                                  ),
-                                  fit: BoxFit.cover,
+                                  image:
+                                      caminhoImagemSelecionada!.startsWith(
+                                        'http',
+                                      )
+                                      ? NetworkImage(
+                                              caminhoImagemSelecionada!,
+                                            )
+                                            as ImageProvider
+                                      : FileImage(
+                                          File(caminhoImagemSelecionada!),
+                                        ),
+                                  fit: mostrarFotoInteira
+                                      ? BoxFit.contain
+                                      : BoxFit.cover,
+                                  alignment: Alignment(0, alinhamentoFotoY),
                                 )
                               : null,
                         ),
-                        child:
-                            caminhoImagemSelecionada == null ||
+                        child: isUploading
+                            ? const Center(child: CircularProgressIndicator())
+                            : caminhoImagemSelecionada == null ||
                                 caminhoImagemSelecionada!.isEmpty
                             ? const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
@@ -517,10 +604,13 @@ class Dashboard extends StatelessWidget {
                                             color: Colors.white,
                                             size: 16,
                                           ),
+
                                           onPressed: () async {
-                                            // 1. Apaga a foto da memória do celular
+                                            // Só tenta apagar do celular se NÃO for um link da internet (http)
                                             if (caminhoImagemSelecionada !=
-                                                null) {
+                                                    null &&
+                                                !caminhoImagemSelecionada!
+                                                    .startsWith('http')) {
                                               try {
                                                 final arquivo = File(
                                                   caminhoImagemSelecionada!,
@@ -530,14 +620,23 @@ class Dashboard extends StatelessWidget {
                                                 }
                                               } catch (e) {
                                                 debugPrint(
-                                                  'Erro ao apagar imagem do cache: $e',
+                                                  'Erro ao apagar imagem: $e',
                                                 );
                                               }
                                             }
 
                                             // 2. Limpa a variável e atualiza a tela
+                                            if (evento.imagemFundoUrl !=
+                                                    caminhoImagemSelecionada &&
+                                                evento.imagemFundoDeleteUrl !=
+                                                    deleteUrlImagemSelecionada) {
+                                              ImgbbServico.deleteImage(
+                                                deleteUrlImagemSelecionada,
+                                              );
+                                            }
                                             setStateDialog(() {
                                               caminhoImagemSelecionada = null;
+                                              deleteUrlImagemSelecionada = null;
                                             });
                                           },
                                         ),
@@ -547,6 +646,19 @@ class Dashboard extends StatelessWidget {
                                 ),
                               ),
                       ),
+                    ),
+                    const SizedBox(height: 16),
+                    _imageFitControls(
+                      hasImage: caminhoImagemSelecionada != null &&
+                          caminhoImagemSelecionada!.isNotEmpty,
+                      mostrarFotoInteira: mostrarFotoInteira,
+                      alinhamentoFotoY: alinhamentoFotoY,
+                      onMostrarFotoInteiraChanged: (value) {
+                        setStateDialog(() => mostrarFotoInteira = value);
+                      },
+                      onAlinhamentoFotoChanged: (value) {
+                        setStateDialog(() => alinhamentoFotoY = value);
+                      },
                     ),
                     const SizedBox(height: 16),
 
@@ -656,7 +768,13 @@ class Dashboard extends StatelessWidget {
         ),
         actions: [
           TextButton(
-            onPressed: () => Navigator.pop(context),
+            onPressed: () {
+              if (evento.imagemFundoUrl != caminhoImagemSelecionada &&
+                  evento.imagemFundoDeleteUrl != deleteUrlImagemSelecionada) {
+                ImgbbServico.deleteImage(deleteUrlImagemSelecionada);
+              }
+              Navigator.pop(context);
+            },
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
@@ -675,12 +793,18 @@ class Dashboard extends StatelessWidget {
                   data: data.text,
                   horario: horario.text,
                   descricao: desc.text,
-                  imagemFundoLocal:
+                  imagemFundoUrl:
                       caminhoImagemSelecionada, // <-- Mantém a imagem salva!
+                  imagemFundoDeleteUrl: deleteUrlImagemSelecionada,
+                  imagemFundoMostrarInteira: mostrarFotoInteira,
+                  imagemFundoAlinhamentoY: alinhamentoFotoY,
                   convidados: evento.convidados,
                   anfitriaoId: evento.anfitriaoId,
                 );
                 SatisfactionController.instance.editarEvento(updated);
+                if (evento.imagemFundoUrl != caminhoImagemSelecionada) {
+                  ImgbbServico.deleteImage(evento.imagemFundoDeleteUrl);
+                }
                 Navigator.pop(context);
               }
             },
@@ -793,6 +917,10 @@ class Dashboard extends StatelessWidget {
 
     // 1. Variável local para guardar a imagem
     String? caminhoImagemSelecionada;
+    String? deleteUrlImagemSelecionada;
+    bool mostrarFotoInteira = true;
+    double alinhamentoFotoY = -1;
+    bool isUploading = false;
 
     showModalBottomSheet(
       context: context,
@@ -808,22 +936,27 @@ class Dashboard extends StatelessWidget {
             final pickedFile = await picker.pickImage(
               source: ImageSource.gallery,
             );
-            if (pickedFile != null) {
-              final diretorioApp = await getApplicationDocumentsDirectory();
-              final nomeArquivo =
-                  '${DateTime.now().millisecondsSinceEpoch}.png';
-              final imagemSalva = await File(
-                pickedFile.path,
-              ).copy('${diretorioApp.path}/$nomeArquivo');
 
-              // Atualiza o pop-up para mostrar a foto
+            if (pickedFile != null) {
+              setStateDialog(() => isUploading = true); // Mostra o progresso
+
+              // Chama o serviço do ImgBB e envia para a internet
+              final upload = await ImgbbServico.uploadImageBytes(
+                await pickedFile.readAsBytes(),
+              );
+
               setStateDialog(() {
-                caminhoImagemSelecionada = imagemSalva.path;
+                if (upload != null) {
+                  caminhoImagemSelecionada =
+                      upload.url; // Agora guarda o link 'http'
+                  deleteUrlImagemSelecionada = upload.deleteUrl;
+                }
+                isUploading = false; // Esconde o progresso
               });
             }
           }
 
-          return Padding(
+          return SingleChildScrollView(
             padding: EdgeInsets.fromLTRB(
               28,
               12,
@@ -866,16 +999,30 @@ class Dashboard extends StatelessWidget {
                           color: Colors.grey.withAlpha(51),
                           width: 2,
                         ),
-                        image: caminhoImagemSelecionada != null
+                        image:
+                            caminhoImagemSelecionada != null &&
+                                (caminhoImagemSelecionada!.startsWith(
+                                      'http',
+                                    ) ||
+                                    !kIsWeb)
                             ? DecorationImage(
-                                image: FileImage(
-                                  File(caminhoImagemSelecionada!),
-                                ),
-                                fit: BoxFit.cover,
+                                image:
+                                    caminhoImagemSelecionada!.startsWith('http')
+                                    ? NetworkImage(caminhoImagemSelecionada!)
+                                          as ImageProvider
+                                    : FileImage(
+                                        File(caminhoImagemSelecionada!),
+                                      ),
+                                fit: mostrarFotoInteira
+                                    ? BoxFit.contain
+                                    : BoxFit.cover,
+                                alignment: Alignment(0, alinhamentoFotoY),
                               )
                             : null,
                       ),
-                      child: caminhoImagemSelecionada == null
+                      child: isUploading
+                          ? const Center(child: CircularProgressIndicator())
+                          : caminhoImagemSelecionada == null
                           ? const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
@@ -901,21 +1048,6 @@ class Dashboard extends StatelessWidget {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                    // BOTÃO DE EDITAR (Lápis)
-                                    CircleAvatar(
-                                      backgroundColor: Colors.black54,
-                                      radius: 18,
-                                      child: IconButton(
-                                        padding: EdgeInsets.zero,
-                                        icon: const Icon(
-                                          Icons.edit,
-                                          color: Colors.white,
-                                          size: 18,
-                                        ),
-                                        onPressed: escolherImagem,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 8),
                                    // BOTÃO DE REMOVER (X)
                                     CircleAvatar(
                                       backgroundColor: Colors.redAccent,
@@ -928,21 +1060,24 @@ class Dashboard extends StatelessWidget {
                                           size: 18,
                                         ),
                                         onPressed: () async {
-                                          // 1. Apaga a foto da memória do dispositivo
-                                          if (caminhoImagemSelecionada != null) {
+                                          // 1. Só tentamos apagar se for um arquivo local
+                                          if (caminhoImagemSelecionada != null && !caminhoImagemSelecionada!.startsWith('http')) {
                                             try {
                                               final arquivo = File(caminhoImagemSelecionada!);
                                               if (await arquivo.exists()) {
                                                 await arquivo.delete();
                                               }
                                             } catch (e) {
-                                              debugPrint('Erro ao apagar imagem do cache: $e');
+                                              debugPrint('Erro ao apagar arquivo: $e');
                                             }
                                           }
-                                          
-                                          // 2. Limpa a variável e atualiza o ecrã
+                                          // 2. Limpa a variável
+                                          ImgbbServico.deleteImage(
+                                            deleteUrlImagemSelecionada,
+                                          );
                                           setStateDialog(() {
                                             caminhoImagemSelecionada = null;
+                                            deleteUrlImagemSelecionada = null;
                                           });
                                         },
                                       ),
@@ -952,6 +1087,19 @@ class Dashboard extends StatelessWidget {
                               ),
                             ),
                     ),
+                  ),
+                  const SizedBox(height: 16),
+                  _imageFitControls(
+                    hasImage: caminhoImagemSelecionada != null &&
+                        caminhoImagemSelecionada!.isNotEmpty,
+                    mostrarFotoInteira: mostrarFotoInteira,
+                    alinhamentoFotoY: alinhamentoFotoY,
+                    onMostrarFotoInteiraChanged: (value) {
+                      setStateDialog(() => mostrarFotoInteira = value);
+                    },
+                    onAlinhamentoFotoChanged: (value) {
+                      setStateDialog(() => alinhamentoFotoY = value);
+                    },
                   ),
                   const SizedBox(height: 16),
 
@@ -1086,8 +1234,11 @@ class Dashboard extends StatelessWidget {
                               data: d.text,
                               horario: h.text,
                               descricao: desc.text,
-                              imagemFundoLocal:
+                              imagemFundoUrl:
                                   caminhoImagemSelecionada, // <-- 5. Enviando o caminho para o Banco!
+                              imagemFundoDeleteUrl: deleteUrlImagemSelecionada,
+                              imagemFundoMostrarInteira: mostrarFotoInteira,
+                              imagemFundoAlinhamentoY: alinhamentoFotoY,
                               convidados: <Convidado>[],
                             ),
                           );

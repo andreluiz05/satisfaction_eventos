@@ -7,6 +7,7 @@ import 'package:firebase_database/firebase_database.dart'; // Pacote necessário
 import '../models/evento_modelo.dart';
 import '../models/convidado_modelo.dart';
 import '../services/firebase_servico.dart';
+import '../services/imgbb_servico.dart';
 import 'login_controlador.dart';
 
 class SatisfactionController extends ChangeNotifier {
@@ -147,9 +148,12 @@ class SatisfactionController extends ChangeNotifier {
    }
 
   void deletarEvento(String id) async {
+    final index = _eventos.indexWhere((e) => e.id == id);
+    final deleteUrl = index == -1 ? null : _eventos[index].imagemFundoDeleteUrl;
     _eventos.removeWhere((e) => e.id == id);
     notifyListeners();
     await _firebase.deletar(id);
+    await ImgbbServico.deleteImage(deleteUrl);
   }
 
   // --- Responsavel por deletar todos os eventos de um anfitrião específico (usado na exclusão de conta) ---

@@ -1,9 +1,11 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart';
 import '../autenticacao/login_tela.dart';
+import 'dart:io';
 
 class ConfirmacaoPresencaScreen extends StatefulWidget {
   final Evento evento;
@@ -17,6 +19,34 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
   final TextEditingController _emailController = TextEditingController();
   Convidado? _convidadoEncontrado;
   bool _buscou = false;
+
+  Widget _eventBackgroundImage() {
+    final imageUrl = widget.evento.imagemFundoUrl;
+    if (imageUrl == null || imageUrl.isEmpty) return const SizedBox.shrink();
+
+    final alignment = Alignment(0, widget.evento.imagemFundoAlinhamentoY);
+
+    Widget image({required BoxFit fit}) {
+      if (imageUrl.startsWith('http')) {
+        return Image.network(imageUrl, fit: fit, alignment: alignment);
+      }
+      if (kIsWeb) return const SizedBox.shrink();
+      return Image.file(File(imageUrl), fit: fit, alignment: alignment);
+    }
+
+    if (!widget.evento.imagemFundoMostrarInteira) {
+      return image(fit: BoxFit.cover);
+    }
+
+    return Stack(
+      fit: StackFit.expand,
+      children: [
+        image(fit: BoxFit.cover),
+        Container(color: Colors.black.withAlpha(80)),
+        image(fit: BoxFit.contain),
+      ],
+    );
+  }
 
   void _buscarConvite() {
     HapticFeedback.lightImpact();
@@ -85,9 +115,23 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Stack(
+     body: Stack(
         children: [
-          Container(decoration: const BoxDecoration(gradient: LinearGradient(colors: [Color(0xFF3B0B59), Color(0xFF003D4C)], begin: Alignment.topRight, end: Alignment.bottomLeft))),
+          Positioned.fill(child: _eventBackgroundImage()),
+
+          // 2. O GRADIENTE ESCURECEDOR (com transparência para a foto aparecer)
+          Container(
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF3B0B59).withAlpha(180),
+                  const Color(0xFF003D4C).withAlpha(220)
+                ],
+                begin: Alignment.topRight,
+                end: Alignment.bottomLeft,
+              ),
+            ),
+          ),
           
           SafeArea(
             child: Column(
@@ -226,7 +270,7 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
             ),
           ),
         ],
-      ),
+      )
     );
   }
 }

@@ -1,42 +1,63 @@
 import 'convidado_modelo.dart';
 
 class Evento {
-  String id, nome, local, data, horario, descricao; // <-- Adicionamos a descrição aqui
+  String id, nome, local, data, horario, descricao;
   List<Convidado> convidados;
-  String? anfitriaoId; // id do usuário que criou/é dono do evento
-  String? imagemFundoLocal; // Vai guardar o caminho da foto no celular-imagem guardada em cache local do dispositivo
-  
+  String? anfitriaoId;
+  String? imagemFundoUrl;
+  String? imagemFundoDeleteUrl;
+  bool imagemFundoMostrarInteira;
+  double imagemFundoAlinhamentoY;
+
   Evento({
-    required this.id, 
-    required this.nome, 
-    required this.local, 
-    required this.data, 
-    required this.horario, 
+    required this.id,
+    required this.nome,
+    required this.local,
+    required this.data,
+    required this.horario,
     required this.convidados,
-    this.descricao = '', // Padrão é vazio caso o usuário não preencha
+    this.descricao = '',
     this.anfitriaoId,
-    this.imagemFundoLocal,
+    this.imagemFundoUrl,
+    this.imagemFundoDeleteUrl,
+    this.imagemFundoMostrarInteira = false,
+    this.imagemFundoAlinhamentoY = -1,
   });
 
   Map<String, dynamic> toJson() => {
-    'id': id, 'nome': nome, 'local': local, 'data': data, 'horario': horario,
-    'descricao': descricao, // <-- Salvando no cache
+    'id': id,
+    'nome': nome,
+    'local': local,
+    'data': data,
+    'horario': horario,
+    'descricao': descricao,
     'convidados': convidados.map((c) => c.toJson()).toList(),
     'anfitriaoId': anfitriaoId,
-    'imagemFundoLocal': imagemFundoLocal, // Salvando o caminho da imagem no cache (ou null se não tiver)
+    'imagemFundoUrl': imagemFundoUrl,
+    'imagemFundoDeleteUrl': imagemFundoDeleteUrl,
+    'imagemFundoMostrarInteira': imagemFundoMostrarInteira,
+    'imagemFundoAlinhamentoY': imagemFundoAlinhamentoY,
   };
 
   factory Evento.fromJson(Map<String, dynamic> json) => Evento(
-    id: json['id'], 
-    nome: json['nome'], 
-    local: json['local'], 
-    data: json['data'], 
+    id: json['id'],
+    nome: json['nome'],
+    local: json['local'],
+    data: json['data'],
     horario: json['horario'],
-    descricao: json['descricao'] ?? '', // <-- Lendo do cache (ou vazio se for antigo)
+    descricao: json['descricao'] ?? '',
     anfitriaoId: json['anfitriaoId'] as String?,
-    imagemFundoLocal: json['imagemFundoLocal'] as String?, // Lendo o caminho da imagem do cache (ou null se não tiver)
-    convidados: json['convidados'] != null 
-        ? (json['convidados'] as List).map((c) => Convidado.fromJson(Map<String, dynamic>.from(c as Map))).toList()
+    imagemFundoUrl:
+        (json['imagemFundoUrl'] as String?) ??
+        (json['imagemFundoLocal'] as String?),
+    imagemFundoDeleteUrl: json['imagemFundoDeleteUrl'] as String?,
+    imagemFundoMostrarInteira: json['imagemFundoMostrarInteira'] as bool? ?? false,
+    imagemFundoAlinhamentoY:
+        (json['imagemFundoAlinhamentoY'] as num?)?.toDouble() ?? -1,
+    convidados: json['convidados'] != null
+        ? (json['convidados'] as List)
+              .map((c) => Convidado.fromJson(Map<String, dynamic>.from(c as Map)))
+              .toList()
         : [],
   );
 }
