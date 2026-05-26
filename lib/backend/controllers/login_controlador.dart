@@ -3,11 +3,12 @@ import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:firebase_database/firebase_database.dart';
 //RESPONSAVEIS PELO ESQUECEU SENHA "EMAILJS"
-import 'dart:math'; 
+import 'dart:math';
 import 'package:http/http.dart' as http;
 // ----------------------------------
 
 import '../models/anfitriao_modelo.dart';
+import 'eventos_controlador.dart';
 
 class LoginControlador extends ChangeNotifier {
   static final LoginControlador instance = LoginControlador._();
@@ -86,6 +87,23 @@ class LoginControlador extends ChangeNotifier {
     await prefs.remove(_prefsKey);
     notifyListeners();
   }
+
+  // --- Método de exclusão de conta ---
+  Future<void> deletarConta() async {
+    if (_current == null) return;
+    
+    if (_current!.id != null && _current!.id!.isNotEmpty) {
+      // 1. Apaga todos os eventos vinculados a este anfitrião
+      await SatisfactionController.instance.deletarTodosEventosDoAnfitriao(_current!.id!);
+      
+      // 2. Apaga o registro do anfitrião no nó 'anfitriaos' do Firebase
+      await _dbRef.child(_current!.id!).remove();
+    }
+    
+    // 3. Limpa o cache local e desloga
+    await signOut();
+  }
+  // ------------------------------------
 
   /// Registra um novo anfitrião. Tenta salvar no Firebase; em caso de falha salva localmente.
   Future<AnfitriaoModelo> register(

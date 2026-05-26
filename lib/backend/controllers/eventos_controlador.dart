@@ -152,6 +152,17 @@ class SatisfactionController extends ChangeNotifier {
     await _firebase.deletar(id);
   }
 
+  // --- Responsavel por deletar todos os eventos de um anfitrião específico (usado na exclusão de conta) ---
+  Future<void> deletarTodosEventosDoAnfitriao(String anfitriaoId) async {
+    // Pegamos uma cópia da lista para evitar erros de modificação durante o loop
+    final eventosParaDeletar = _eventos.where((e) => e.anfitriaoId == anfitriaoId).toList();
+    
+    for (var evento in eventosParaDeletar) {
+      deletarEvento(evento.id); // Reutilizamos o seu método de deleção de evento que já faz o trabalho completo
+    }
+  }
+  // ------------------------------------
+
   void adicionarConvidado(String eventoId, Convidado c) async {
     final evento = _eventos.firstWhere((e) => e.id == eventoId);
     evento.convidados.add(c);

@@ -32,7 +32,7 @@ class PerfilScreen extends StatelessWidget {
           ],
         ),
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24),
         child: Column(
           children: [
@@ -176,7 +176,7 @@ class PerfilScreen extends StatelessWidget {
               ),
             ),
 
-            const Spacer(),
+            const SizedBox(height: 40),
             SizedBox(
               width: double.infinity,
               height: 60,
@@ -205,6 +205,18 @@ class PerfilScreen extends StatelessWidget {
                     fontWeight: FontWeight.w900,
                     letterSpacing: 1,
                   ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 12),
+            // --- NOVO BOTÃO DE EXCLUIR CONTA ---
+            TextButton(
+              onPressed: () => _confirmarExclusaoConta(context),
+              child: const Text(
+                'Excluir minha conta permanentemente',
+                style: TextStyle(
+                  color: Color(0xFFEF4444),
+                  fontWeight: FontWeight.bold,
                 ),
               ),
             ),
@@ -259,6 +271,52 @@ class PerfilScreen extends StatelessWidget {
             ),
           );
         },
+      ),
+    );
+  }
+
+  void _confirmarExclusaoConta(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        title: const Row(
+          children: [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444)),
+            SizedBox(width: 10),
+            Text('Excluir Conta?', style: TextStyle(fontWeight: FontWeight.w900)),
+          ],
+        ),
+        content: const Text(
+          'Aviso: Esta ação é irreversível. Sua conta, todos os seus eventos criados e as listas de convidados serão apagados permanentemente do banco de dados.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text('CANCELAR', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFEF4444),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+            onPressed: () async {
+              HapticFeedback.heavyImpact();
+              // Chama a função do backend que apaga os eventos e o usuário
+              await LoginControlador.instance.deletarConta();
+              
+              if (context.mounted) {
+                // Limpa o histórico de telas e joga para o login
+                Navigator.pushAndRemoveUntil(
+                  context,
+                  MaterialPageRoute(builder: (_) => const LoginScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            child: const Text('EXCLUIR TUDO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }
