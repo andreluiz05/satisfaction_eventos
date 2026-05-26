@@ -8,6 +8,7 @@ import '../../backend/models/evento_modelo.dart';
 import '../../backend/services/imgbb_servico.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:io';
+import 'dart:ui';
 
 class EventDetail extends StatelessWidget {
   final String eventoId;
@@ -673,11 +674,16 @@ class EventDetail extends StatelessWidget {
       return image(fit: BoxFit.cover);
     }
 
-    return Stack(
+  return Stack(
       fit: StackFit.expand,
       children: [
         image(fit: BoxFit.cover),
-        Container(color: Colors.black.withAlpha(80)),
+        ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+            child: Container(color: Colors.black.withAlpha(120)),
+          ),
+        ),
         image(fit: BoxFit.contain),
       ],
     );

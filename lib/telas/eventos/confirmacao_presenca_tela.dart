@@ -6,6 +6,7 @@ import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart';
 import '../autenticacao/login_tela.dart';
 import 'dart:io';
+import 'dart:ui';
 
 class ConfirmacaoPresencaScreen extends StatefulWidget {
   final Evento evento;
@@ -38,12 +39,18 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
       return image(fit: BoxFit.cover);
     }
 
-    return Stack(
+   return Stack(
       fit: StackFit.expand,
       children: [
-        image(fit: BoxFit.cover),
-        Container(color: Colors.black.withAlpha(80)),
-        image(fit: BoxFit.contain),
+        image(fit: BoxFit.cover), // Fundo esticado
+        // Efeito de Desfoque (Blur) no fundo para não parecer "duas fotos"
+        ClipRect(
+          child: BackdropFilter(
+            filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+            child: Container(color: Colors.black.withAlpha(120)),
+          ),
+        ),
+        image(fit: BoxFit.contain), // Foto nítida em cima
       ],
     );
   }
