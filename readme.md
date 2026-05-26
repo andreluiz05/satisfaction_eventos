@@ -122,6 +122,9 @@ Este projeto segue as normas de desenvolvimento de software, incluindo a documen
 
 **Ênio Enrique**
 
+**Emerson Marcos**
+
+
 
 ## 🙏 Agradecimentos
 
