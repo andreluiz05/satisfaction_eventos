@@ -8,34 +8,42 @@
   ![Flutter](https://img.shields.io/badge/Flutter-%2302569B.svg?style=for-the-badge&logo=Flutter&logoColor=white)
   ![Dart](https://img.shields.io/badge/dart-%230175C2.svg?style=for-the-badge&logo=dart&logoColor=white)
   ![Firebase](https://img.shields.io/badge/Firebase-FFCA28?style=for-the-badge&logo=firebase&logoColor=black)
+  ![Android](https://img.shields.io/badge/Android-3DDC84?style=for-the-badge&logo=android&logoColor=white)
+  ![iOS](https://img.shields.io/badge/iOS-000000?style=for-the-badge&logo=apple&logoColor=white)
 </div>
 
 ## 📌 Sobre o Projeto
 
-O **Satisfaction Eventos** é uma solução completa para organização de eventos, permitindo gestão de convidados e controle de presença em tempo real. O sistema foi refatorado para oferecer alta performance, segurança avançada e customização visual, permitindo aos anfitriões gerir eventos com identidade visual própria (via integração ImgBB) e total controle sobre seus dados.
+O **Satisfaction Eventos** é uma solução robusta para organização de eventos, permitindo gestão de convidados e controle de presença em tempo real. O sistema foi projetado para oferecer alta performance e segurança, permitindo aos anfitriões gerir eventos com identidade visual própria (via integração com API ImgBB) e total controle sobre seus dados.
 
-Este projeto foi desenvolvido como requisito avaliativo para o curso de **Análise e Desenvolvimento de Sistemas (ADS)**.
+Este projeto foi desenvolvido como requisito avaliativo para o curso de **Análise e Desenvolvimento de Sistemas (ADS)** da Uninassau.
 
 ## ✨ Funcionalidades Principais
 
-- **☁️ Gestão de Imagens em Nuvem:** Upload de banners customizáveis (ImgBB) com controle de alinhamento e preenchimento.
-- **🔒 Segurança Avançada:** Senhas protegidas com `bcrypt` e fluxo de recuperação via API EmailJS.
-- **⚡ Tempo Real:** Sincronização instantânea de dados via Firebase Realtime Database.
-- **🌐 Suporte Multiplataforma:** Experiência nativa em Android, iOS e Web.
-- **👥 Controle Total:** Gestão de convidados com exclusão em cascata e interface intuitiva.
+- **☁️ Gestão de Imagens em Nuvem:** Upload de banners customizáveis (ImgBB) com suporte a alinhamento vertical, *toggles* de redimensionamento e exclusão física automática.
+- **🔒 Segurança Avançada:** Proteção de senhas com *hashing* nativo (`bcrypt`) e fluxo completo de recuperação de senha via integração EmailJS.
+- **⚡ Tempo Real:** Sincronização instantânea de dados via Firebase Realtime Database (`onValue.listen`).
+- **🌐 Suporte Multiplataforma:** Experiência otimizada para Android, iOS e Web.
+- **👥 Controle Total:** Gestão de convidados com exclusão em cascata (remover conta apaga todos os dados vinculados).
 - **🌗 Tema Dinâmico:** Suporte a Modo Claro e Modo Escuro com design *Glassmorphism*.
 
 ## 🛠️ Tecnologias e Arquitetura
 
-* **Framework:** Flutter
+O sistema segue padrões rigorosos de engenharia de software para garantir escalabilidade:
+
+* **Framework:** Flutter (Dart)
 * **Backend:** Firebase (Realtime Database & Authentication)
 * **APIs de Terceiros:** ImgBB (Imagens), EmailJS (E-mails)
-* **Arquitetura:** Padrão **MVC** (Model-View-Controller) com separação em camadas (`Controllers`, `Services`, `Models`).
+* **Arquitetura:** Padrão **MVC** (Model-View-Controller) com separação clara entre as camadas:
+    * **Models:** Estruturas de dados (Anfitrião, Evento, Convidado).
+    * **Controllers:** Regras de negócio e sincronização de estado.
+    * **Services:** Integração com APIs externas e Firebase.
+    * **Views:** Telas e interface do usuário (UI).
 
 ## 🚀 Como Executar o Projeto
 
-1. Clone este repositório:
-   `git clone https://github.com/andreluiz05/satisfaction_eventos.git`
-2. Acesse a pasta: `cd satisfaction_eventos`
-3. Instale as dependências: `flutter pub get`
-4. Execute: `flutter run`
+Para clonar e rodar este aplicativo localmente:
+
+1. **Clone este repositório:**
+   ```bash
+   git clone [https://github.com/andreluiz05/satisfaction_eventos.git](https://github.com/andreluiz05/satisfaction_eventos.git)
