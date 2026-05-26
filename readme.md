@@ -116,11 +116,12 @@ Este projeto segue as normas de desenvolvimento de software, incluindo a documen
 4. Push para a branch: `git push origin minha-feature`
 5. Abra um **Pull Request**
 
-## 👨‍💻 Autor
+## 👨‍💻 Autores
 
 **André Luiz**
 
-[![GitHub](https://img.shields.io/badge/GitHub-100000?style=for-the-badge&logo=github&logoColor=white)](https://github.com/andreluiz05)
+**Ênio Enrique**
+
 
 ## 🙏 Agradecimentos
 
