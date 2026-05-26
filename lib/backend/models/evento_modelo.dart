@@ -23,6 +23,7 @@ class Evento {
     'descricao': descricao, // <-- Salvando no cache
     'convidados': convidados.map((c) => c.toJson()).toList(),
     'anfitriaoId': anfitriaoId,
+    'imagemFundoLocal': imagemFundoLocal, // Salvando o caminho da imagem no cache (ou null se não tiver)
   };
 
   factory Evento.fromJson(Map<String, dynamic> json) => Evento(

@@ -488,18 +488,61 @@ class Dashboard extends StatelessWidget {
                                 alignment: Alignment.topRight,
                                 child: Padding(
                                   padding: const EdgeInsets.all(8.0),
-                                  child: CircleAvatar(
-                                    backgroundColor: Colors.black54,
-                                    radius: 16,
-                                    child: IconButton(
-                                      padding: EdgeInsets.zero,
-                                      icon: const Icon(
-                                        Icons.edit,
-                                        color: Colors.white,
-                                        size: 16,
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      // BOTÃO DE EDITAR (Lápis)
+                                      CircleAvatar(
+                                        backgroundColor: Colors.black54,
+                                        radius: 16,
+                                        child: IconButton(
+                                          padding: EdgeInsets.zero,
+                                          icon: const Icon(
+                                            Icons.edit,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                          onPressed: escolherImagem,
+                                        ),
                                       ),
-                                      onPressed: escolherImagem,
-                                    ),
+                                      const SizedBox(width: 8),
+                                      // BOTÃO DE REMOVER (X)
+                                      CircleAvatar(
+                                        backgroundColor: Colors.redAccent,
+                                        radius: 16,
+                                        child: IconButton(
+                                          padding: EdgeInsets.zero,
+                                          icon: const Icon(
+                                            Icons.close,
+                                            color: Colors.white,
+                                            size: 16,
+                                          ),
+                                          onPressed: () async {
+                                            // 1. Apaga a foto da memória do celular
+                                            if (caminhoImagemSelecionada !=
+                                                null) {
+                                              try {
+                                                final arquivo = File(
+                                                  caminhoImagemSelecionada!,
+                                                );
+                                                if (await arquivo.exists()) {
+                                                  await arquivo.delete();
+                                                }
+                                              } catch (e) {
+                                                debugPrint(
+                                                  'Erro ao apagar imagem do cache: $e',
+                                                );
+                                              }
+                                            }
+
+                                            // 2. Limpa a variável e atualiza a tela
+                                            setStateDialog(() {
+                                              caminhoImagemSelecionada = null;
+                                            });
+                                          },
+                                        ),
+                                      ),
+                                    ],
                                   ),
                                 ),
                               ),
@@ -855,16 +898,56 @@ class Dashboard extends StatelessWidget {
                               alignment: Alignment.topRight,
                               child: Padding(
                                 padding: const EdgeInsets.all(8.0),
-                                child: CircleAvatar(
-                                  backgroundColor: Colors.black54,
-                                  child: IconButton(
-                                    icon: const Icon(
-                                      Icons.edit,
-                                      color: Colors.white,
-                                      size: 18,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    // BOTÃO DE EDITAR (Lápis)
+                                    CircleAvatar(
+                                      backgroundColor: Colors.black54,
+                                      radius: 18,
+                                      child: IconButton(
+                                        padding: EdgeInsets.zero,
+                                        icon: const Icon(
+                                          Icons.edit,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
+                                        onPressed: escolherImagem,
+                                      ),
                                     ),
-                                    onPressed: escolherImagem,
-                                  ),
+                                    const SizedBox(width: 8),
+                                   // BOTÃO DE REMOVER (X)
+                                    CircleAvatar(
+                                      backgroundColor: Colors.redAccent,
+                                      radius: 18,
+                                      child: IconButton(
+                                        padding: EdgeInsets.zero,
+                                        icon: const Icon(
+                                          Icons.close,
+                                          color: Colors.white,
+                                          size: 18,
+                                        ),
+                                        onPressed: () async {
+                                          // 1. Apaga a foto da memória do dispositivo
+                                          if (caminhoImagemSelecionada != null) {
+                                            try {
+                                              final arquivo = File(caminhoImagemSelecionada!);
+                                              if (await arquivo.exists()) {
+                                                await arquivo.delete();
+                                              }
+                                            } catch (e) {
+                                              debugPrint('Erro ao apagar imagem do cache: $e');
+                                            }
+                                          }
+                                          
+                                          // 2. Limpa a variável e atualiza o ecrã
+                                          setStateDialog(() {
+                                            caminhoImagemSelecionada = null;
+                                          });
+                                        },
+                                      ),
+                                    ),
+                                  ],
                                 ),
                               ),
                             ),
