@@ -1,13 +1,12 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/controllers/login_controlador.dart';
 import '../../backend/models/convidado_modelo.dart';
 import '../../backend/models/evento_modelo.dart';
 import '../../backend/services/imgbb_servico.dart';
+import '../../backend/utils/platform_image.dart';
 import 'package:image_picker/image_picker.dart';
-import 'dart:io';
 import 'dart:ui';
 
 class EventDetail extends StatelessWidget {
@@ -234,9 +233,9 @@ class EventDetail extends StatelessWidget {
                           const SizedBox(height: 12),
                           Text(
                             evento.descricao,
-                            style: const TextStyle(
+                            style: TextStyle(
                               fontSize: 14,
-                              color: Colors.black87,
+                              color: theme.colorScheme.onSurfaceVariant,
                               height: 1.5,
                             ),
                           ),
@@ -645,7 +644,10 @@ class EventDetail extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).whenComplete(() {
+      n.dispose();
+      e.dispose();
+    });
   }
 
   void _showEditGuestDialog(
@@ -664,17 +666,32 @@ class EventDetail extends StatelessWidget {
 
     Widget image({required BoxFit fit}) {
       if (imageUrl.startsWith('http')) {
-        return Image.network(imageUrl, fit: fit, alignment: alignment);
+        return Image.network(
+          imageUrl,
+          fit: fit,
+          alignment: alignment,
+          loadingBuilder: (context, child, loadingProgress) {
+            if (loadingProgress == null) return child;
+            return Center(
+              child: CircularProgressIndicator(
+                color: Theme.of(context).colorScheme.primary,
+                value: loadingProgress.expectedTotalBytes != null
+                    ? loadingProgress.cumulativeBytesLoaded /
+                          loadingProgress.expectedTotalBytes!
+                    : null,
+              ),
+            );
+          },
+        );
       }
-      if (kIsWeb) return const SizedBox.shrink();
-      return Image.file(File(imageUrl), fit: fit, alignment: alignment);
+      return localFileImage(imageUrl, fit: fit, alignment: alignment);
     }
 
     if (!evento.imagemFundoMostrarInteira) {
       return image(fit: BoxFit.cover);
     }
 
-  return Stack(
+    return Stack(
       fit: StackFit.expand,
       children: [
         image(fit: BoxFit.cover),
@@ -801,13 +818,18 @@ class EventDetail extends StatelessWidget {
                           caminhoImagemSelecionada != null &&
                               caminhoImagemSelecionada!.isNotEmpty &&
                               (caminhoImagemSelecionada!.startsWith('http') ||
-                                  !kIsWeb)
+                                  localFileImageProvider(
+                                        caminhoImagemSelecionada!,
+                                      ) !=
+                                      null)
                           ? DecorationImage(
                               image:
                                   caminhoImagemSelecionada!.startsWith('http')
                                   ? NetworkImage(caminhoImagemSelecionada!)
                                         as ImageProvider
-                                  : FileImage(File(caminhoImagemSelecionada!)),
+                                  : localFileImageProvider(
+                                      caminhoImagemSelecionada!,
+                                    )!,
                               fit: mostrarFotoInteira
                                   ? BoxFit.contain
                                   : BoxFit.cover,
@@ -816,7 +838,20 @@ class EventDetail extends StatelessWidget {
                           : null,
                     ),
                     child: isUploading
-                        ? const Center(child: CircularProgressIndicator())
+                        ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 12),
+                              Text(
+                                'Carregando foto, aguarde...',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          )
                         : caminhoImagemSelecionada == null ||
                               caminhoImagemSelecionada!.isEmpty
                         ? const Column(
@@ -1055,7 +1090,13 @@ class EventDetail extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).whenComplete(() {
+      nome.dispose();
+      local.dispose();
+      data.dispose();
+      horario.dispose();
+      desc.dispose();
+    });
   }
 
   String _formatBrazilDate(DateTime value) {

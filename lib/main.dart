@@ -56,6 +56,10 @@ class SatisfactionApp extends StatelessWidget {
               surface: Colors.white, // Cor das superfícies (como os cartões dos eventos)
               brightness: Brightness.light // Informa ao Flutter que este é o tema claro
             ),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: Colors.white,
+              surfaceTintColor: Colors.transparent,
+            ),
           ),
           
           // --- CONFIGURAÇÃO DO TEMA ESCURO ---
@@ -69,6 +73,19 @@ class SatisfactionApp extends StatelessWidget {
               secondary: const Color(0xFF00E5FF), 
               surface: const Color(0xFF1E293B), // Cor das superfícies no modo escuro
               brightness: Brightness.dark // Informa ao Flutter que este é o tema escuro
+            ),
+            dialogTheme: const DialogThemeData(
+              backgroundColor: Color(0xFF1E293B),
+              surfaceTintColor: Colors.transparent,
+            ),
+            inputDecorationTheme: InputDecorationTheme(
+              fillColor: const Color(0xFF1E293B),
+              labelStyle: const TextStyle(color: Color(0xFFCBD5E1)),
+              hintStyle: const TextStyle(color: Color(0xFF94A3B8)),
+              border: OutlineInputBorder(
+                borderRadius: BorderRadius.circular(16),
+                borderSide: BorderSide.none,
+              ),
             ),
           ),
           

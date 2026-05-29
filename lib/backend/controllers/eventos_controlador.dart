@@ -127,6 +127,15 @@ class SatisfactionController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void clearSessionData() {
+    _subscription?.cancel();
+    _subscription = null;
+    _eventos.clear();
+    _searchQuery = '';
+    isCarregando = false;
+    notifyListeners();
+  }
+
   // Adiciona um novo evento ou atualiza um existente no local e no Firebase
   Future<void> salvarEvento(Evento e) async {
      final currentHost = LoginControlador.instance.current;
@@ -147,7 +156,7 @@ class SatisfactionController extends ChangeNotifier {
      await _firebase.salvarEvento(e);
    }
 
-  void deletarEvento(String id) async {
+  Future<void> deletarEvento(String id) async {
     final index = _eventos.indexWhere((e) => e.id == id);
     final deleteUrl = index == -1 ? null : _eventos[index].imagemFundoDeleteUrl;
     _eventos.removeWhere((e) => e.id == id);
@@ -161,8 +170,8 @@ class SatisfactionController extends ChangeNotifier {
     // Pegamos uma cópia da lista para evitar erros de modificação durante o loop
     final eventosParaDeletar = _eventos.where((e) => e.anfitriaoId == anfitriaoId).toList();
     
-    for (var evento in eventosParaDeletar) {
-      deletarEvento(evento.id); // Reutilizamos o seu método de deleção de evento que já faz o trabalho completo
+    for (final evento in eventosParaDeletar) {
+      await deletarEvento(evento.id); // Reutilizamos o seu método de deleção de evento que já faz o trabalho completo
     }
   }
   // ------------------------------------

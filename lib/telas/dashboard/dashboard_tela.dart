@@ -1,14 +1,13 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/controllers/login_controlador.dart';
 import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart';
+import '../../backend/utils/platform_image.dart';
 import '../eventos/detalhes_evento_tela.dart';
 
 //IMPORT ADICIONAIS PARA MANIPULAÇÃO DE IMAGENS E INTEGRAÇÃO COM O ImgBB
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
 
 // -----------------------------------------------
@@ -84,14 +83,14 @@ class Dashboard extends StatelessWidget {
                                 vertical: 6,
                               ),
                               decoration: BoxDecoration(
-                                color: const Color(0xFFE2E8F0),
+                                color: theme.colorScheme.primary.withAlpha(25),
                                 borderRadius: BorderRadius.circular(20),
                               ),
                               child: Text(
                                 '${ctrl.eventos.length} operações ativas',
-                                style: const TextStyle(
+                                style: TextStyle(
                                   fontWeight: FontWeight.w800,
-                                  color: Color(0xFF475569),
+                                  color: theme.colorScheme.primary,
                                   fontSize: 12,
                                 ),
                               ),
@@ -254,160 +253,185 @@ class Dashboard extends StatelessWidget {
     ),
   );
 
-  Widget _eventoCard(BuildContext context, Evento e, ThemeData theme) =>
-      Container(
-        margin: const EdgeInsets.only(bottom: 16),
-        decoration: BoxDecoration(
-          color: theme.colorScheme.surface,
-          borderRadius: BorderRadius.circular(24),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withAlpha(10),
-              blurRadius: 20,
-              offset: const Offset(0, 8),
-            ),
-          ],
+  Widget _eventoCard(
+    BuildContext context,
+    Evento e,
+    ThemeData theme,
+  ) => Container(
+    margin: const EdgeInsets.only(bottom: 16),
+    decoration: BoxDecoration(
+      color: theme.colorScheme.surface,
+      borderRadius: BorderRadius.circular(24),
+      boxShadow: [
+        BoxShadow(
+          color: Colors.black.withAlpha(10),
+          blurRadius: 20,
+          offset: const Offset(0, 8),
         ),
-        child: Material(
-          color: Colors.transparent,
-          child: InkWell(
-            borderRadius: BorderRadius.circular(24),
-            onTap: () {
-              HapticFeedback.lightImpact();
-              Navigator.push(
-                context,
-                MaterialPageRoute(builder: (_) => EventDetail(eventoId: e.id)),
-              );
-            },
-            child: Padding(
-              padding: const EdgeInsets.all(20),
-              child: Row(
-                children: [
-                  Container(
-                    width: 64,
-                    height: 64,
-                    clipBehavior: Clip.antiAlias,
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withAlpha(25),
-                      borderRadius: BorderRadius.circular(20),
-                    ),
-                    child: e.imagemFundoUrl != null &&
-                            e.imagemFundoUrl!.isNotEmpty &&
-                            e.imagemFundoUrl!.startsWith('http')
-                        ? Image.network(
-                            e.imagemFundoUrl!,
-                            fit: BoxFit.cover,
-                            alignment: Alignment(
-                              0,
-                              e.imagemFundoAlinhamentoY,
-                            ),
-                          )
-                        : Icon(
-                            Icons.confirmation_num_rounded,
-                            color: theme.colorScheme.primary,
-                            size: 28,
-                          ),
-                  ),
-                  const SizedBox(width: 20),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Hero(
-                          tag: 'title_${e.id}',
-                          child: Material(
-                            color: Colors.transparent,
-                            child: Text(
-                              e.nome,
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 18,
-                                color: theme.colorScheme.onSurface,
-                              ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Row(
-                          children: [
-                            const Icon(
-                              Icons.place_rounded,
-                              size: 14,
-                              color: Colors.grey,
-                            ),
-                            const SizedBox(width: 4),
-                            Expanded(
-                              child: Text(
-                                e.local,
-                                style: const TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w500,
-                                  fontSize: 13,
+      ],
+    ),
+    child: Material(
+      color: Colors.transparent,
+      child: InkWell(
+        borderRadius: BorderRadius.circular(24),
+        onTap: () {
+          HapticFeedback.lightImpact();
+          Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => EventDetail(eventoId: e.id)),
+          );
+        },
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Row(
+            children: [
+              Container(
+                width: 64,
+                height: 64,
+                clipBehavior: Clip.antiAlias,
+                decoration: BoxDecoration(
+                  color: theme.colorScheme.primary.withAlpha(25),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child:
+                    e.imagemFundoUrl != null &&
+                        e.imagemFundoUrl!.isNotEmpty &&
+                        e.imagemFundoUrl!.startsWith('http')
+                    ? Image.network(
+                        e.imagemFundoUrl!,
+                        fit: BoxFit.cover,
+                        // Mostra a bolinha de carregamento enquanto a imagem não carrega
+                        loadingBuilder:
+                            (
+                              BuildContext context,
+                              Widget child,
+                              ImageChunkEvent? loadingProgress,
+                            ) {
+                              if (loadingProgress == null) {
+                                return child; // A imagem já carregou, mostra a imagem normal
+                              }
+                              // Enquanto não carrega, mostra a bolinha
+                              return Center(
+                                child: CircularProgressIndicator(
+                                  color: Theme.of(context)
+                                      .colorScheme
+                                      .primary,
+                                  value:
+                                      loadingProgress.expectedTotalBytes != null
+                                      ? loadingProgress.cumulativeBytesLoaded /
+                                            loadingProgress.expectedTotalBytes!
+                                      : null,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                              ),
+                              );
+                            },
+                        alignment: Alignment(0, e.imagemFundoAlinhamentoY),
+                      )
+                    : Icon(
+                        Icons.confirmation_num_rounded,
+                        color: theme.colorScheme.primary,
+                        size: 28,
+                      ),
+              ),
+              const SizedBox(width: 20),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Hero(
+                      tag: 'title_${e.id}',
+                      child: Material(
+                        color: Colors.transparent,
+                        child: Text(
+                          e.nome,
+                          style: TextStyle(
+                            fontWeight: FontWeight.w800,
+                            fontSize: 18,
+                            color: theme.colorScheme.onSurface,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(
+                          Icons.place_rounded,
+                          size: 14,
+                          color: Colors.grey,
+                        ),
+                        const SizedBox(width: 4),
+                        Expanded(
+                          child: Text(
+                            e.local,
+                            style: const TextStyle(
+                              color: Colors.grey,
+                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
                             ),
-                          ],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
                       ],
                     ),
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.end,
-                    children: [
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: theme.colorScheme.primary.withAlpha(25),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          e.id,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12,
-                            color: theme.colorScheme.primary,
-                          ),
-                        ),
+                  ],
+                ),
+              ),
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 8,
+                      vertical: 4,
+                    ),
+                    decoration: BoxDecoration(
+                      color: theme.colorScheme.primary.withAlpha(25),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      e.id,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        fontSize: 12,
+                        color: theme.colorScheme.primary,
                       ),
-                      const SizedBox(height: 8),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
-                            icon: Icon(
-                              Icons.edit_outlined,
-                              color: theme.colorScheme.primary,
-                              size: 18,
-                            ),
-                            onPressed: () {
-                              HapticFeedback.lightImpact();
-                              _showEditEventDialog(context, e);
-                            },
-                          ),
-                          const SizedBox(width: 8),
-                          const Icon(
-                            Icons.chevron_right_rounded,
-                            color: Colors.grey,
-                          ),
-                        ],
+                    ),
+                  ),
+                  const SizedBox(height: 8),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      IconButton(
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          Icons.edit_outlined,
+                          color: theme.colorScheme.primary,
+                          size: 18,
+                        ),
+                        onPressed: () {
+                          HapticFeedback.lightImpact();
+                          _showEditEventDialog(context, e);
+                        },
+                      ),
+                      const SizedBox(width: 8),
+                      const Icon(
+                        Icons.chevron_right_rounded,
+                        color: Colors.grey,
                       ),
                     ],
                   ),
                 ],
               ),
-            ),
+            ],
           ),
         ),
-      );
+      ),
+    ),
+  );
 
   Widget _imageFitControls({
     required bool hasImage,
@@ -528,19 +552,20 @@ class Dashboard extends StatelessWidget {
                                   (caminhoImagemSelecionada!.startsWith(
                                         'http',
                                       ) ||
-                                      !kIsWeb)
+                                      localFileImageProvider(
+                                            caminhoImagemSelecionada!,
+                                          ) !=
+                                          null)
                               ? DecorationImage(
                                   image:
                                       caminhoImagemSelecionada!.startsWith(
                                         'http',
                                       )
-                                      ? NetworkImage(
-                                              caminhoImagemSelecionada!,
-                                            )
+                                      ? NetworkImage(caminhoImagemSelecionada!)
                                             as ImageProvider
-                                      : FileImage(
-                                          File(caminhoImagemSelecionada!),
-                                        ),
+                                      : localFileImageProvider(
+                                          caminhoImagemSelecionada!,
+                                        )!,
                                   fit: mostrarFotoInteira
                                       ? BoxFit.contain
                                       : BoxFit.cover,
@@ -549,9 +574,22 @@ class Dashboard extends StatelessWidget {
                               : null,
                         ),
                         child: isUploading
-                            ? const Center(child: CircularProgressIndicator())
+                            ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 12),
+                              Text(
+                                'Carregando foto, aguarde...',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          )
                             : caminhoImagemSelecionada == null ||
-                                caminhoImagemSelecionada!.isEmpty
+                                  caminhoImagemSelecionada!.isEmpty
                             ? const Column(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
@@ -612,12 +650,9 @@ class Dashboard extends StatelessWidget {
                                                 !caminhoImagemSelecionada!
                                                     .startsWith('http')) {
                                               try {
-                                                final arquivo = File(
+                                                await deleteLocalFileIfExists(
                                                   caminhoImagemSelecionada!,
                                                 );
-                                                if (await arquivo.exists()) {
-                                                  await arquivo.delete();
-                                                }
                                               } catch (e) {
                                                 debugPrint(
                                                   'Erro ao apagar imagem: $e',
@@ -649,7 +684,8 @@ class Dashboard extends StatelessWidget {
                     ),
                     const SizedBox(height: 16),
                     _imageFitControls(
-                      hasImage: caminhoImagemSelecionada != null &&
+                      hasImage:
+                          caminhoImagemSelecionada != null &&
                           caminhoImagemSelecionada!.isNotEmpty,
                       mostrarFotoInteira: mostrarFotoInteira,
                       alinhamentoFotoY: alinhamentoFotoY,
@@ -812,7 +848,13 @@ class Dashboard extends StatelessWidget {
           ),
         ],
       ),
-    );
+    ).whenComplete(() {
+      nome.dispose();
+      local.dispose();
+      data.dispose();
+      horario.dispose();
+      desc.dispose();
+    });
   }
 
   String _formatBrazilDate(DateTime value) {
@@ -886,9 +928,10 @@ class Dashboard extends StatelessWidget {
                 borderRadius: BorderRadius.circular(12),
               ),
             ),
-            onPressed: () {
+            onPressed: () async {
               HapticFeedback.heavyImpact();
-              SatisfactionController.instance.deletarEvento(eventoId);
+              await SatisfactionController.instance.deletarEvento(eventoId);
+              if (!context.mounted) return;
               Navigator.pop(context);
               ScaffoldMessenger.of(context).showSnackBar(
                 const SnackBar(content: Text('Evento removido com sucesso.')),
@@ -1001,18 +1044,19 @@ class Dashboard extends StatelessWidget {
                         ),
                         image:
                             caminhoImagemSelecionada != null &&
-                                (caminhoImagemSelecionada!.startsWith(
-                                      'http',
-                                    ) ||
-                                    !kIsWeb)
+                                (caminhoImagemSelecionada!.startsWith('http') ||
+                                    localFileImageProvider(
+                                          caminhoImagemSelecionada!,
+                                        ) !=
+                                        null)
                             ? DecorationImage(
                                 image:
                                     caminhoImagemSelecionada!.startsWith('http')
                                     ? NetworkImage(caminhoImagemSelecionada!)
                                           as ImageProvider
-                                    : FileImage(
-                                        File(caminhoImagemSelecionada!),
-                                      ),
+                                    : localFileImageProvider(
+                                        caminhoImagemSelecionada!,
+                                      )!,
                                 fit: mostrarFotoInteira
                                     ? BoxFit.contain
                                     : BoxFit.cover,
@@ -1021,7 +1065,20 @@ class Dashboard extends StatelessWidget {
                             : null,
                       ),
                       child: isUploading
-                          ? const Center(child: CircularProgressIndicator())
+                          ? const Column(
+                            mainAxisAlignment: MainAxisAlignment.center,
+                            children: [
+                              CircularProgressIndicator(),
+                              SizedBox(height: 12),
+                              Text(
+                                'Carregando foto, aguarde...',
+                                style: TextStyle(
+                                  color: Colors.grey,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                            ],
+                          )
                           : caminhoImagemSelecionada == null
                           ? const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -1048,7 +1105,7 @@ class Dashboard extends StatelessWidget {
                                 child: Row(
                                   mainAxisSize: MainAxisSize.min,
                                   children: [
-                                   // BOTÃO DE REMOVER (X)
+                                    // BOTÃO DE REMOVER (X)
                                     CircleAvatar(
                                       backgroundColor: Colors.redAccent,
                                       radius: 18,
@@ -1061,14 +1118,18 @@ class Dashboard extends StatelessWidget {
                                         ),
                                         onPressed: () async {
                                           // 1. Só tentamos apagar se for um arquivo local
-                                          if (caminhoImagemSelecionada != null && !caminhoImagemSelecionada!.startsWith('http')) {
+                                          if (caminhoImagemSelecionada !=
+                                                  null &&
+                                              !caminhoImagemSelecionada!
+                                                  .startsWith('http')) {
                                             try {
-                                              final arquivo = File(caminhoImagemSelecionada!);
-                                              if (await arquivo.exists()) {
-                                                await arquivo.delete();
-                                              }
+                                              await deleteLocalFileIfExists(
+                                                caminhoImagemSelecionada!,
+                                              );
                                             } catch (e) {
-                                              debugPrint('Erro ao apagar arquivo: $e');
+                                              debugPrint(
+                                                'Erro ao apagar arquivo: $e',
+                                              );
                                             }
                                           }
                                           // 2. Limpa a variável
@@ -1090,7 +1151,8 @@ class Dashboard extends StatelessWidget {
                   ),
                   const SizedBox(height: 16),
                   _imageFitControls(
-                    hasImage: caminhoImagemSelecionada != null &&
+                    hasImage:
+                        caminhoImagemSelecionada != null &&
                         caminhoImagemSelecionada!.isNotEmpty,
                     mostrarFotoInteira: mostrarFotoInteira,
                     alinhamentoFotoY: alinhamentoFotoY,
@@ -1261,6 +1323,12 @@ class Dashboard extends StatelessWidget {
           );
         },
       ),
-    );
+    ).whenComplete(() {
+      n.dispose();
+      l.dispose();
+      d.dispose();
+      h.dispose();
+      desc.dispose();
+    });
   }
 }

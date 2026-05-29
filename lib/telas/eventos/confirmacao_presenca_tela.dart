@@ -1,11 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart';
+import '../../backend/utils/platform_image.dart';
 import '../autenticacao/login_tela.dart';
-import 'dart:io';
 import 'dart:ui';
 
 class ConfirmacaoPresencaScreen extends StatefulWidget {
@@ -21,6 +20,12 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
   Convidado? _convidadoEncontrado;
   bool _buscou = false;
 
+  @override
+  void dispose() {
+    _emailController.dispose();
+    super.dispose();
+  }
+
   Widget _eventBackgroundImage() {
     final imageUrl = widget.evento.imagemFundoUrl;
     if (imageUrl == null || imageUrl.isEmpty) return const SizedBox.shrink();
@@ -31,15 +36,14 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
       if (imageUrl.startsWith('http')) {
         return Image.network(imageUrl, fit: fit, alignment: alignment);
       }
-      if (kIsWeb) return const SizedBox.shrink();
-      return Image.file(File(imageUrl), fit: fit, alignment: alignment);
+      return localFileImage(imageUrl, fit: fit, alignment: alignment);
     }
 
     if (!widget.evento.imagemFundoMostrarInteira) {
       return image(fit: BoxFit.cover);
     }
 
-   return Stack(
+    return Stack(
       fit: StackFit.expand,
       children: [
         image(fit: BoxFit.cover), // Fundo esticado

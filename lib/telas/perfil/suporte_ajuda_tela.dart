@@ -2,13 +2,36 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
 
-class SuporteAjudaScreen extends StatelessWidget {
+class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget também, dependendo de como você criou)
   const SuporteAjudaScreen({super.key});
+
+  // =========================================================
+  // 2. COLE AS SUAS FUNÇÕES AQUI (Dentro da classe, antes do build)
+  // =========================================================
+
+  // Função para abrir o WhatsApp externamente
+  Future<void> chamarNoWhatsApp() async {
+    final Uri whatsappUrl = Uri.parse("https://wa.me/5531998235716");
+    if (await canLaunchUrl(whatsappUrl)) {
+      await launchUrl(whatsappUrl, mode: LaunchMode.externalApplication);
+    }
+  }
+
+  // Função para abrir o aplicativo de E-mail
+  Future<void> enviarEmail() async {
+    final Uri emailUrl = Uri(
+      scheme: 'mailto',
+      path: 'tecalli.oficial@gmail.com',
+      queryParameters: {'subject': 'Suporte - Satisfaction Eventos'},
+    );
+    if (await canLaunchUrl(emailUrl)) {
+      await launchUrl(emailUrl);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-
     return Scaffold(
       appBar: AppBar(
         title: const Text('Suporte e Ajuda', style: TextStyle(fontWeight: FontWeight.bold)),
@@ -77,18 +100,7 @@ class SuporteAjudaScreen extends StatelessWidget {
               'E-mail',
               'tecalli.oficial@gmail.com',
               'Enviar e-mail',
-              () async {
-                final Uri emailUri = Uri(
-                  scheme: 'mailto',
-                  path: 'tecalli.oficial@gmail.com',
-                  queryParameters: {
-                    'subject': 'Suporte - Satisfaction Eventos'
-                  },
-                );
-                if (await canLaunchUrl(emailUri)) {
-                  await launchUrl(emailUri);
-                }
-              },
+              enviarEmail,
             ),
             const SizedBox(height: 12),
             
@@ -100,12 +112,7 @@ class SuporteAjudaScreen extends StatelessWidget {
               'WhatsApp',
               '+55 31 99823-5716',
               'Chamar no Zap',
-              () async {
-                final Uri whatsappUri = Uri.parse('https://wa.me/5531998235716');
-                if (await canLaunchUrl(whatsappUri)) {
-                  await launchUrl(whatsappUri, mode: LaunchMode.externalApplication);
-                }
-              },
+              chamarNoWhatsApp,
             ),
           ],
         ),

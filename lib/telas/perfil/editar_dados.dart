@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
-
 import '../../backend/controllers/login_controlador.dart';
 import 'privacidade_senha_tela.dart';
+import '../autenticacao/login_tela.dart';
 
 class EditarDadosPage extends StatefulWidget {
   const EditarDadosPage({Key? key}) : super(key: key);
@@ -70,8 +70,125 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
     );
   }
 
-  @override
-  Widget build(BuildContext context) {
+// --- NOVA FUNÇÃO PROFISSIONAL DE EXCLUSÃO DE CONTA ---
+  void _confirmarExclusaoConta(BuildContext context) {
+    String fraseDigitada = "";
+    final theme = Theme.of(context);
+
+    showDialog(
+      context: context,
+      barrierDismissible: false, // Força o usuário a interagir com os botões
+      builder: (context) => StatefulBuilder(
+        builder: (context, setStateDialog) {
+          return AlertDialog(
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            title: const Row(
+              children: [
+                Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 28),
+                SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    'Excluir Conta?', 
+                    style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFEF4444)),
+                  ),
+                ),
+              ],
+            ),
+            content: Column(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text(
+                  'Aviso: Esta ação é irreversível. Sua conta, todos os seus eventos criados e as listas de convidados serão apagados permanentemente do nosso banco de dados.',
+                  style: TextStyle(height: 1.5, color: theme.colorScheme.onSurfaceVariant),
+                ),
+                const SizedBox(height: 24),
+                Text(
+                  'Para confirmar, digite exatamente a frase abaixo:',
+                  style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
+                ),
+                const SizedBox(height: 8),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFFEF4444).withAlpha(25),
+                    borderRadius: BorderRadius.circular(8),
+                    border: Border.all(color: const Color(0xFFEF4444).withAlpha(100)),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'DESEJO EXCLUIR MINHA CONTA',
+                      style: TextStyle(
+                        fontWeight: FontWeight.w900,
+                        color: Color(0xFFEF4444),
+                        letterSpacing: 0.5,
+                      ),
+                      textAlign: TextAlign.center,
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 16),
+                TextField(
+                  onChanged: (val) {
+                    // Atualiza o estado da caixa de diálogo a cada letra digitada
+                    setStateDialog(() {
+                      fraseDigitada = val;
+                    });
+                  },
+                  decoration: InputDecoration(
+                    hintText: 'Digite a frase aqui...',
+                    filled: true,
+                    fillColor: theme.colorScheme.surface,
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: BorderSide(color: Colors.grey.withAlpha(100)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(12),
+                      borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
+                    ),
+                  ),
+                ),
+              ],
+            ),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: const Text('CANCELAR', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
+              ),
+              ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFFEF4444),
+                  disabledBackgroundColor: const Color(0xFFEF4444).withAlpha(100),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                ),
+                // O botão só fica habilitado se a frase digitada for exata
+                onPressed: fraseDigitada == 'DESEJO EXCLUIR MINHA CONTA'
+                    ? () async {
+                        HapticFeedback.heavyImpact();
+                        
+                        // Executa a exclusão no backend
+                        await LoginControlador.instance.deletarConta();
+                        
+                        if (context.mounted) {
+                          // Limpa a pilha de telas e joga para o Login
+                          Navigator.pushAndRemoveUntil(
+                            context,
+                            MaterialPageRoute(builder: (_) => const LoginScreen()),
+                            (route) => false,
+                          );
+                        }
+                      }
+                    : null, // null desativa o botão visualmente e o clique
+                child: const Text('EXCLUIR TUDO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+              ),
+            ],
+          );
+        },
+      ),
+    );
+  }
+  @override Widget build(BuildContext context) {
     final theme = Theme.of(context);
 
     return Scaffold(
@@ -189,6 +306,29 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
                 foregroundColor: theme.colorScheme.primary,
               ),
             ),
+            // Botão para excluir conta
+            const SizedBox(height: 40),
+            const Divider(),
+            const SizedBox(height: 16),
+            TextButton.icon(
+              onPressed: () {
+                HapticFeedback.lightImpact();
+                _confirmarExclusaoConta(context);
+              },
+              icon: const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444)),
+              label: const Text(
+                'Excluir conta permanentemente',
+                style: TextStyle(
+                  color: Color(0xFFEF4444),
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              style: TextButton.styleFrom(
+                padding: const EdgeInsets.symmetric(vertical: 16),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+              ),
+            ),
+            const SizedBox(height: 20),
           ],
         ),
       ),

@@ -85,6 +85,7 @@ class LoginControlador extends ChangeNotifier {
     _current = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_prefsKey);
+    SatisfactionController.instance.clearSessionData();
     notifyListeners();
   }
 

@@ -15,15 +15,30 @@ class _MainNavigationState extends State<MainNavigation> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
     return Scaffold(
       body: IndexedStack(index: _currentIndex, children: _telas),
       bottomNavigationBar: NavigationBar(
         selectedIndex: _currentIndex,
-        onDestinationSelected: (i) { HapticFeedback.selectionClick(); setState(() => _currentIndex = i); },
+        onDestinationSelected: (i) {
+          HapticFeedback.selectionClick();
+          setState(() => _currentIndex = i);
+        },
         elevation: 10,
-        destinations: const [
-          NavigationDestination(icon: Icon(Icons.dashboard_outlined), selectedIcon: Icon(Icons.dashboard_rounded, color: Color(0xFF6A1B9A)), label: 'Dashboard'),
-          NavigationDestination(icon: Icon(Icons.person_outline), selectedIcon: Icon(Icons.person, color: Color(0xFF6A1B9A)), label: 'Perfil'),
+        destinations: [
+          NavigationDestination(
+            icon: const Icon(Icons.dashboard_outlined),
+            selectedIcon: Icon(
+              Icons.dashboard_rounded,
+              color: theme.colorScheme.primary,
+            ),
+            label: 'Dashboard',
+          ),
+          NavigationDestination(
+            icon: const Icon(Icons.person_outline),
+            selectedIcon: Icon(Icons.person, color: theme.colorScheme.primary),
+            label: 'Perfil',
+          ),
         ],
       ),
     );
