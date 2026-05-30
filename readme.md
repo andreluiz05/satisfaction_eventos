@@ -46,7 +46,8 @@ satisfaction_eventos/
 │   ├── controllers/      # Lógica de negócio (MVC)
 │   ├── models/           # Modelos de dados
 │   ├── services/         # Integrações com APIs/Firebase
-│   ├── views/            # Telas da aplicação
+│   ├── telas/            # Telas da aplicação
+|   |──tema/              #Estilo de cada tela da aplicação
 │   └── main.dart         # Ponto de entrada
 ├── assets/               # Imagens, fontes e recursos
 └── pubspec.yaml          # Dependências do projeto
