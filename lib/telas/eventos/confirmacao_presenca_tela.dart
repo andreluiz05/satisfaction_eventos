@@ -4,6 +4,7 @@ import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart';
 import '../../backend/utils/platform_image.dart';
+import '../../tema/confirmacao_presenca_tela_estilo.dart';
 import '../autenticacao/login_tela.dart';
 import 'dart:ui';
 
@@ -51,7 +52,7 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
         ClipRect(
           child: BackdropFilter(
             filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-            child: Container(color: Colors.black.withAlpha(120)),
+            child: Container(decoration: ConfirmacaoPresencaEstilo.fundoOverlayBlur),
           ),
         ),
         image(fit: BoxFit.contain), // Foto nítida em cima
@@ -104,17 +105,17 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
               ? 'Sua presença foi confirmada com sucesso! Te esperamos lá.' 
               : 'Poxa, que pena! Avisamos o organizador que você não poderá ir.',
             textAlign: TextAlign.center,
-            style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w600),
+            style: ConfirmacaoPresencaEstilo.textoDialog,
           ),
           actions: [
             SizedBox(
               width: double.infinity,
               child: ElevatedButton(
-                style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF6A1B9A), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                style: ConfirmacaoPresencaEstilo.botaoDialog,
                 onPressed: () {
                   Navigator.pushAndRemoveUntil(context, MaterialPageRoute(builder: (_) => const LoginScreen()), (route) => false);
                 },
-                child: const Text('VOLTAR AO INÍCIO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text('VOLTAR AO INÍCIO', style: ConfirmacaoPresencaEstilo.textoBotaoDialog),
               ),
             )
           ],
@@ -130,17 +131,10 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
         children: [
           Positioned.fill(child: _eventBackgroundImage()),
 
-          // 2. O GRADIENTE ESCURECEDOR (com transparência para a foto aparecer)
+          // 2. O GRADIENTE ESCURECEDOR
           Container(
             decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF3B0B59).withAlpha(180),
-                  const Color(0xFF003D4C).withAlpha(220)
-                ],
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-              ),
+              gradient: ConfirmacaoPresencaEstilo.gradienteFundoTransparente,
             ),
           ),
           
@@ -159,12 +153,12 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
                     padding: const EdgeInsets.symmetric(horizontal: 24),
                     child: Column(
                       children: [
-                        const Icon(Icons.celebration_rounded, size: 80, color: Color(0xFF00E5FF)),
+                        const Icon(Icons.celebration_rounded, size: 80, color: ConfirmacaoPresencaEstilo.corAcento),
                         const SizedBox(height: 16),
-                        Text(widget.evento.nome, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white, fontSize: 28, fontWeight: FontWeight.w900)),
+                        Text(widget.evento.nome, textAlign: TextAlign.center, style: ConfirmacaoPresencaEstilo.nomeEvento),
                         const SizedBox(height: 8),
-                        Text('${widget.evento.data} às ${widget.evento.horario}', style: const TextStyle(color: Colors.white70, fontSize: 16, fontWeight: FontWeight.w600)),
-                        Text(widget.evento.local, textAlign: TextAlign.center, style: const TextStyle(color: Colors.white54, fontSize: 14)),
+                        Text('${widget.evento.data} às ${widget.evento.horario}', style: ConfirmacaoPresencaEstilo.dataHoraEvento),
+                        Text(widget.evento.local, textAlign: TextAlign.center, style: ConfirmacaoPresencaEstilo.localEvento),
                         
                         // Exibição da Descrição para o Convidado
                         if (widget.evento.descricao.isNotEmpty) ...[
@@ -172,11 +166,7 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
                           Container(
                             width: double.infinity,
                             padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(
-                              color: Colors.black.withAlpha(51),
-                              borderRadius: BorderRadius.circular(16),
-                              border: Border.all(color: Colors.white.withAlpha(25))
-                            ),
+                            decoration: ConfirmacaoPresencaEstilo.containerDescricao,
                             child: Column(
                               children: [
                                 const Icon(Icons.info_outline_rounded, color: Colors.white70, size: 20),
@@ -184,7 +174,7 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
                                 Text(
                                   widget.evento.descricao,
                                   textAlign: TextAlign.center,
-                                  style: const TextStyle(color: Colors.white70, fontSize: 14, height: 1.5),
+                                  style: ConfirmacaoPresencaEstilo.textoDescricao,
                                 ),
                               ],
                             ),
@@ -195,17 +185,17 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
 
                         Container(
                           padding: const EdgeInsets.all(24),
-                          decoration: BoxDecoration(color: Colors.white.withAlpha(25), borderRadius: BorderRadius.circular(32), border: Border.all(color: Colors.white.withAlpha(51))),
+                          decoration: ConfirmacaoPresencaEstilo.containerBusca,
                           child: Column(
                             children: [
-                              const Text('Encontre seu convite', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold)),
+                              const Text('Encontre seu convite', style: ConfirmacaoPresencaEstilo.tituloBusca),
                               const SizedBox(height: 16),
                               TextField(
                                 controller: _emailController,
-                                style: const TextStyle(color: Colors.white),
+                                style: ConfirmacaoPresencaEstilo.textoCampoInput,
                                 decoration: InputDecoration(
                                   hintText: 'Digite o e-mail cadastrado',
-                                  hintStyle: const TextStyle(color: Colors.white54),
+                                  hintStyle: ConfirmacaoPresencaEstilo.textoCampoHint,
                                   prefixIcon: const Icon(Icons.email_outlined, color: Colors.white70),
                                   filled: true,
                                   fillColor: Colors.black.withAlpha(51),
@@ -216,9 +206,11 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
                               SizedBox(
                                 width: double.infinity, height: 50,
                                 child: ElevatedButton(
-                                  style: ElevatedButton.styleFrom(backgroundColor: const Color(0xFF00E5FF), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                                  style: ConfirmacaoPresencaEstilo.estiloBotaoElevado.copyWith(
+                                    shape: WidgetStateProperty.all(RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                                  ),
                                   onPressed: _buscarConvite,
-                                  child: const Text('BUSCAR', style: TextStyle(color: Color(0xFF003D4C), fontWeight: FontWeight.w900, letterSpacing: 1)),
+                                  child: const Text('BUSCAR', style: ConfirmacaoPresencaEstilo.textoBotaoPrincipal),
                                 ),
                               )
                             ],
@@ -230,42 +222,42 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
                         if (_buscou && _convidadoEncontrado == null)
                           Container(
                             padding: const EdgeInsets.all(16),
-                            decoration: BoxDecoration(color: Colors.redAccent.withAlpha(51), borderRadius: BorderRadius.circular(16)),
+                            decoration: ConfirmacaoPresencaEstilo.containerErro,
                             child: const Row(children: [
-                              Icon(Icons.error_outline_rounded, color: Colors.redAccent),
+                              Icon(Icons.error_outline_rounded, color: ConfirmacaoPresencaEstilo.corErro),
                               SizedBox(width: 12),
-                              Expanded(child: Text('E-mail não encontrado na lista de convidados.', style: TextStyle(color: Colors.white, fontWeight: FontWeight.w600)))
+                              Expanded(child: Text('E-mail não encontrado na lista de convidados.', style: ConfirmacaoPresencaEstilo.textoErro))
                             ]),
                           ),
 
                         if (_buscou && _convidadoEncontrado != null)
                           Container(
                             padding: const EdgeInsets.all(24),
-                            decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(32)),
+                            decoration: ConfirmacaoPresencaEstilo.containerSucesso,
                             child: Column(
                               children: [
-                                CircleAvatar(radius: 30, backgroundColor: const Color(0xFF6A1B9A).withAlpha(25), child: Text(_convidadoEncontrado!.iniciais, style: const TextStyle(color: Color(0xFF6A1B9A), fontWeight: FontWeight.bold, fontSize: 20))),
+                                CircleAvatar(radius: 30, backgroundColor: ConfirmacaoPresencaEstilo.corDecorativa.withAlpha(25), child: Text(_convidadoEncontrado!.iniciais, style: ConfirmacaoPresencaEstilo.textoIniciais)),
                                 const SizedBox(height: 16),
-                                Text('Olá, ${_convidadoEncontrado!.nome}!', style: const TextStyle(fontSize: 22, fontWeight: FontWeight.w900, color: Color(0xFF3B0B59))),
+                                Text('Olá, ${_convidadoEncontrado!.nome}!', style: ConfirmacaoPresencaEstilo.textoSaudacao),
                                 const SizedBox(height: 8),
-                                const Text('Você irá a este evento?', style: TextStyle(fontSize: 16, color: Colors.grey)),
+                                const Text('Você irá a este evento?', style: ConfirmacaoPresencaEstilo.textoPerguntaPresenca),
                                 const SizedBox(height: 24),
                                 
                                 Row(
                                   children: [
                                     Expanded(
                                       child: OutlinedButton(
-                                        style: OutlinedButton.styleFrom(foregroundColor: Colors.red, side: const BorderSide(color: Colors.red), padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                                        style: ConfirmacaoPresencaEstilo.botaoNaoIrei,
                                         onPressed: () => _responderConvite(PresencaStatus.refused),
-                                        child: const Text('NÃO IREI', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        child: const Text('NÃO IREI', style: ConfirmacaoPresencaEstilo.textoBotaoNaoIrei),
                                       ),
                                     ),
                                     const SizedBox(width: 16),
                                     Expanded(
                                       child: ElevatedButton(
-                                        style: ElevatedButton.styleFrom(backgroundColor: Colors.green, foregroundColor: Colors.white, padding: const EdgeInsets.symmetric(vertical: 16), shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16))),
+                                        style: ConfirmacaoPresencaEstilo.botaoConfirmar,
                                         onPressed: () => _responderConvite(PresencaStatus.accepted),
-                                        child: const Text('CONFIRMAR', style: TextStyle(fontWeight: FontWeight.bold)),
+                                        child: const Text('CONFIRMAR', style: ConfirmacaoPresencaEstilo.textoBotaoConfirmar),
                                       ),
                                     ),
                                   ],

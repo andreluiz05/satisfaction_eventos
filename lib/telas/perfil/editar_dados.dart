@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../tema/editar_dados_estilo.dart';
 import '../../backend/controllers/login_controlador.dart';
 import 'privacidade_senha_tela.dart';
 import '../autenticacao/login_tela.dart';
@@ -58,16 +59,7 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
 
   InputDecoration _fieldDecoration(String label, {Widget? suffixIcon}) {
     final theme = Theme.of(context);
-    return InputDecoration(
-      labelText: label,
-      filled: true,
-      fillColor: theme.colorScheme.surface,
-      suffixIcon: suffixIcon,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
-      ),
-    );
+    return EditarDadosEstilo.decoracaoCampo(label, theme.colorScheme, suffixIcon: suffixIcon);
   }
 
 // --- NOVA FUNÇÃO PROFISSIONAL DE EXCLUSÃO DE CONTA ---
@@ -81,15 +73,15 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
       builder: (context) => StatefulBuilder(
         builder: (context, setStateDialog) {
           return AlertDialog(
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+            shape: EditarDadosEstilo.formaDialogo,
             title: const Row(
               children: [
-                Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444), size: 28),
+                Icon(Icons.warning_amber_rounded, color: EditarDadosEstilo.corPerigo, size: 28),
                 SizedBox(width: 10),
                 Expanded(
                   child: Text(
                     'Excluir Conta?', 
-                    style: TextStyle(fontWeight: FontWeight.w900, color: Color(0xFFEF4444)),
+                    style: EditarDadosEstilo.textoTituloDialogo,
                   ),
                 ),
               ],
@@ -100,29 +92,21 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
               children: [
                 Text(
                   'Aviso: Esta ação é irreversível. Sua conta, todos os seus eventos criados e as listas de convidados serão apagados permanentemente do nosso banco de dados.',
-                  style: TextStyle(height: 1.5, color: theme.colorScheme.onSurfaceVariant),
+                  style: EditarDadosEstilo.textoConteudoDialogo(theme.colorScheme),
                 ),
                 const SizedBox(height: 24),
                 Text(
                   'Para confirmar, digite exatamente a frase abaixo:',
-                  style: TextStyle(fontWeight: FontWeight.bold, color: theme.colorScheme.onSurface),
+                  style: EditarDadosEstilo.textoDestaqueDialogo(theme.colorScheme),
                 ),
                 const SizedBox(height: 8),
                 Container(
                   padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFFEF4444).withAlpha(25),
-                    borderRadius: BorderRadius.circular(8),
-                    border: Border.all(color: const Color(0xFFEF4444).withAlpha(100)),
-                  ),
+                  decoration: EditarDadosEstilo.decoracaoFraseConfirmacao(),
                   child: const Center(
                     child: Text(
                       'DESEJO EXCLUIR MINHA CONTA',
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        color: Color(0xFFEF4444),
-                        letterSpacing: 0.5,
-                      ),
+                      style: EditarDadosEstilo.textoFraseConfirmacao,
                       textAlign: TextAlign.center,
                     ),
                   ),
@@ -135,19 +119,7 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
                       fraseDigitada = val;
                     });
                   },
-                  decoration: InputDecoration(
-                    hintText: 'Digite a frase aqui...',
-                    filled: true,
-                    fillColor: theme.colorScheme.surface,
-                    border: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: BorderSide(color: Colors.grey.withAlpha(100)),
-                    ),
-                    focusedBorder: OutlineInputBorder(
-                      borderRadius: BorderRadius.circular(12),
-                      borderSide: const BorderSide(color: Color(0xFFEF4444), width: 2),
-                    ),
-                  ),
+                  decoration: EditarDadosEstilo.decoracaoInputFrase(theme.colorScheme),
                 ),
               ],
             ),
@@ -157,11 +129,7 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
                 child: const Text('CANCELAR', style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold)),
               ),
               ElevatedButton(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEF4444),
-                  disabledBackgroundColor: const Color(0xFFEF4444).withAlpha(100),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                ),
+                style: EditarDadosEstilo.estiloBotaoExcluir(),
                 // O botão só fica habilitado se a frase digitada for exata
                 onPressed: fraseDigitada == 'DESEJO EXCLUIR MINHA CONTA'
                     ? () async {
@@ -180,7 +148,7 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
                         }
                       }
                     : null, // null desativa o botão visualmente e o clique
-                child: const Text('EXCLUIR TUDO', style: TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+                child: const Text('EXCLUIR TUDO', style: EditarDadosEstilo.textoBotaoExcluir),
               ),
             ],
           );
@@ -204,10 +172,7 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
             Center(
               child: Container(
                 padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(18),
-                ),
+                decoration: EditarDadosEstilo.decoracaoIconePerfil(theme.colorScheme),
                 child: Icon(
                   Icons.person_outline_rounded,
                   size: 72,
@@ -218,20 +183,13 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
             const SizedBox(height: 20),
             Text(
               'Atualize seus dados de perfil.',
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
+              style: EditarDadosEstilo.estiloTitulo(theme.colorScheme),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Aqui você pode alterar nome e e-mail. A senha está disponível na tela de Privacidade e Senha.',
-              style: TextStyle(
-                color: theme.colorScheme.onSurfaceVariant,
-                height: 1.5,
-              ),
+              style: EditarDadosEstilo.estiloSubtitulo(theme.colorScheme),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 28),
@@ -269,14 +227,11 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
                   SizedBox(
                     height: 56,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      ),
+                      style: EditarDadosEstilo.estiloBotaoSalvar(theme.colorScheme),
                       onPressed: _salvarDados,
                       child: const Text(
                         'SALVAR ALTERAÇÕES',
-                        style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1),
+                        style: EditarDadosEstilo.textoBotaoSalvar,
                       ),
                     ),
                   ),
@@ -295,16 +250,9 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
               icon: Icon(Icons.lock_outline_rounded, color: theme.colorScheme.primary),
               label: Text(
                 'Alterar senha em Privacidade e Senha',
-                style: TextStyle(
-                  color: theme.colorScheme.primary,
-                  fontWeight: FontWeight.w700,
-                ),
+                style: EditarDadosEstilo.estiloTextoLink(theme.colorScheme),
               ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                foregroundColor: theme.colorScheme.primary,
-              ),
+              style: EditarDadosEstilo.estiloBotaoLink(theme.colorScheme),
             ),
             // Botão para excluir conta
             const SizedBox(height: 40),
@@ -315,18 +263,12 @@ class _EditarDadosPageState extends State<EditarDadosPage> {
                 HapticFeedback.lightImpact();
                 _confirmarExclusaoConta(context);
               },
-              icon: const Icon(Icons.warning_amber_rounded, color: Color(0xFFEF4444)),
+              icon: const Icon(Icons.warning_amber_rounded, color: EditarDadosEstilo.corPerigo),
               label: const Text(
                 'Excluir conta permanentemente',
-                style: TextStyle(
-                  color: Color(0xFFEF4444),
-                  fontWeight: FontWeight.bold,
-                ),
+                style: EditarDadosEstilo.textoBotaoExcluirLink,
               ),
-              style: TextButton.styleFrom(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-              ),
+              style: EditarDadosEstilo.estiloBotaoExcluirLink,
             ),
             const SizedBox(height: 20),
           ],

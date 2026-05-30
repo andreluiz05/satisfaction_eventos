@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../tema/privacidade_senha_tela_estilo.dart';
 import '../../backend/controllers/login_controlador.dart';
 
 class PrivacidadeSenhaScreen extends StatefulWidget {
@@ -56,16 +56,7 @@ class _PrivacidadeSenhaScreenState extends State<PrivacidadeSenhaScreen> {
 
   InputDecoration _fieldDecoration(String label, {Widget? suffixIcon}) {
     final theme = Theme.of(context);
-    return InputDecoration(
-      labelText: label,
-      filled: true,
-      fillColor: theme.colorScheme.surface,
-      suffixIcon: suffixIcon,
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
-      ),
-    );
+    return PrivacidadeSenhaTelaEstilo.decoracaoCampo(label, theme.colorScheme, suffixIcon: suffixIcon);
   }
 
   @override
@@ -74,7 +65,7 @@ class _PrivacidadeSenhaScreenState extends State<PrivacidadeSenhaScreen> {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Privacidade e Senha', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Privacidade e Senha', style: PrivacidadeSenhaTelaEstilo.estiloTituloAppBar),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -86,17 +77,13 @@ class _PrivacidadeSenhaScreenState extends State<PrivacidadeSenhaScreen> {
             const SizedBox(height: 20),
             Text(
               'Atualize sua senha de forma segura.',
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontSize: 20,
-                fontWeight: FontWeight.w700,
-              ),
+              style: PrivacidadeSenhaTelaEstilo.estiloTitulo(theme.colorScheme),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 8),
             Text(
               'Para segurança do seu perfil, informe a senha atual antes de definir uma nova senha.',
-              style: TextStyle(color: theme.colorScheme.onSurfaceVariant, height: 1.5),
+              style: PrivacidadeSenhaTelaEstilo.estiloSubtitulo(theme.colorScheme),
               textAlign: TextAlign.center,
             ),
             const SizedBox(height: 24),
@@ -189,14 +176,11 @@ class _PrivacidadeSenhaScreenState extends State<PrivacidadeSenhaScreen> {
                   SizedBox(
                     height: 56,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: theme.colorScheme.primary,
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
-                      ),
+                      style: PrivacidadeSenhaTelaEstilo.estiloBotaoSalvar(theme.colorScheme),
                       onPressed: _salvarSenha,
                       child: const Text(
                         'ALTERAR SENHA',
-                        style: TextStyle(fontWeight: FontWeight.w900, color: Colors.white, letterSpacing: 1.1),
+                        style: PrivacidadeSenhaTelaEstilo.textoBotaoSalvar,
                       ),
                     ),
                   ),

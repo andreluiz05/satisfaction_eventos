@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import '../../tema/perfil_tela_estilo.dart';
 import '../autenticacao/login_tela.dart';
 import '../../backend/controllers/login_controlador.dart';
 import 'editar_dados.dart';
@@ -23,11 +24,7 @@ class PerfilScreen extends StatelessWidget {
           children: [
             Text(
               'Meu Perfil',
-              style: TextStyle(
-                color: theme.colorScheme.onSurface,
-                fontWeight: FontWeight.w900,
-                fontSize: 24,
-              ),
+              style: PerfilTelaEstilo.estiloTituloAppBar(theme.colorScheme),
             ),
           ],
         ),
@@ -39,13 +36,7 @@ class PerfilScreen extends StatelessWidget {
             Center(
               child: Container(
                 padding: const EdgeInsets.all(4),
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  border: Border.all(
-                    color: theme.colorScheme.primary,
-                    width: 2,
-                  ),
-                ),
+                decoration: PerfilTelaEstilo.decoracaoAvatar(theme.colorScheme),
                 child: CircleAvatar(
                   radius: 50,
                   backgroundColor: theme.colorScheme.primary.withAlpha(25),
@@ -60,19 +51,12 @@ class PerfilScreen extends StatelessWidget {
             const SizedBox(height: 16),
             Text(
               LoginControlador.instance.current?.nome ?? 'Organizador(a)',
-              style: TextStyle(
-                fontSize: 22,
-                fontWeight: FontWeight.w900,
-                color: theme.colorScheme.onSurface,
-              ),
+              style: PerfilTelaEstilo.estiloNome(theme.colorScheme),
             ),
             const SizedBox(height: 4),
             Text(
               LoginControlador.instance.current?.email ?? '',
-              style: const TextStyle(
-                color: Colors.grey,
-                fontWeight: FontWeight.w500,
-              ),
+              style: PerfilTelaEstilo.estiloEmail,
             ),
             const SizedBox(height: 40),
 
@@ -104,25 +88,16 @@ class PerfilScreen extends StatelessWidget {
             ),
             Container(
               margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, offset: const Offset(0, 4)),
-                ],
-              ),
+              decoration: PerfilTelaEstilo.decoracaoItemMenu(theme.colorScheme),
               child: ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withAlpha(25),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: PerfilTelaEstilo.decoracaoIconeMenu(theme.colorScheme),
                   child: Icon(Icons.help_outline_rounded, color: theme.colorScheme.primary),
                 ),
                 title: Text(
                   'Suporte e Ajuda',
-                  style: TextStyle(fontWeight: FontWeight.w700, color: theme.colorScheme.onSurface),
+                  style: PerfilTelaEstilo.estiloTituloMenu(theme.colorScheme),
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
                 onTap: () {
@@ -138,32 +113,16 @@ class PerfilScreen extends StatelessWidget {
             // NOVO BOTÃO SOBRE O APP (Tecalli Tecnologia)
             Container(
               margin: const EdgeInsets.only(bottom: 12),
-              decoration: BoxDecoration(
-                color: theme.colorScheme.surface,
-                borderRadius: BorderRadius.circular(16),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withAlpha(10),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
-              ),
+              decoration: PerfilTelaEstilo.decoracaoItemMenu(theme.colorScheme),
               child: ListTile(
                 leading: Container(
                   padding: const EdgeInsets.all(8),
-                  decoration: BoxDecoration(
-                    color: theme.colorScheme.primary.withAlpha(25),
-                    borderRadius: BorderRadius.circular(10),
-                  ),
+                  decoration: PerfilTelaEstilo.decoracaoIconeMenu(theme.colorScheme),
                   child: Icon(Icons.info_outline_rounded, color: theme.colorScheme.primary),
                 ),
                 title: Text(
                   'Sobre o App',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w700,
-                    color: theme.colorScheme.onSurface,
-                  ),
+                  style: PerfilTelaEstilo.estiloTituloMenu(theme.colorScheme),
                 ),
                 trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
                 onTap: () {
@@ -181,14 +140,7 @@ class PerfilScreen extends StatelessWidget {
               width: double.infinity,
               height: 60,
               child: ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFFEF4444).withAlpha(25),
-                  foregroundColor: const Color(0xFFEF4444),
-                  elevation: 0,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(20),
-                  ),
-                ),
+                style: PerfilTelaEstilo.estiloBotaoSair(),
                 onPressed: () async {
                   HapticFeedback.heavyImpact();
                   await LoginControlador.instance.signOut();
@@ -203,10 +155,7 @@ class PerfilScreen extends StatelessWidget {
                 icon: const Icon(Icons.logout_rounded),
                 label: const Text(
                   'SAIR DA CONTA',
-                  style: TextStyle(
-                    fontWeight: FontWeight.w900,
-                    letterSpacing: 1,
-                  ),
+                  style: PerfilTelaEstilo.textoBotaoSair,
                 ),
               ),
             ),
@@ -227,32 +176,16 @@ class PerfilScreen extends StatelessWidget {
   }) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
-      ),
+      decoration: PerfilTelaEstilo.decoracaoItemMenu(theme.colorScheme),
       child: ListTile(
         leading: Container(
           padding: const EdgeInsets.all(8),
-          decoration: BoxDecoration(
-            color: theme.colorScheme.primary.withAlpha(25),
-            borderRadius: BorderRadius.circular(10),
-          ),
+          decoration: PerfilTelaEstilo.decoracaoIconeMenu(theme.colorScheme),
           child: Icon(icon, color: theme.colorScheme.primary),
         ),
         title: Text(
           title,
-          style: TextStyle(
-            fontWeight: FontWeight.w700,
-            color: theme.colorScheme.onSurface,
-          ),
+          style: PerfilTelaEstilo.estiloTituloMenu(theme.colorScheme),
         ),
         trailing: const Icon(Icons.chevron_right_rounded, color: Colors.grey),
         onTap: onTap ?? () {

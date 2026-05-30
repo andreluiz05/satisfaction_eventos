@@ -1,0 +1,1 @@
+Sempre responda e explique os códigos e arquiteturas em Português do Brasil.

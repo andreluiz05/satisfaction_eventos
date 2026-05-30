@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
-// Importação do controlador de login para realizar o cadastro com segurança usando bcrypt no Firebase
+import '../../tema/cadastro_tela_estilo.dart';
 import '../../backend/controllers/login_controlador.dart';
 
 class CadastroScreen extends StatefulWidget {
@@ -12,11 +12,9 @@ class CadastroScreen extends StatefulWidget {
 }
 
 class _CadastroScreenState extends State<CadastroScreen> {
-  // Variáveis para controlar a visibilidade das senhas organizadas com segurança no Estado
   bool _ocultarSenha = true;
   bool _ocultarConfirmaSenha = true;
 
-  // Controladores para os campos de texto
   final _formKey = GlobalKey<FormState>();
   final TextEditingController _nomeController = TextEditingController();
   final TextEditingController _emailController = TextEditingController();
@@ -41,15 +39,14 @@ class _CadastroScreenState extends State<CadastroScreen> {
       final email = _emailController.text.trim();
       final senha = _senhaController.text.trim();
 
-      // Verifica se já existe conta com este e-mail
       final existe = await LoginControlador.instance.emailExists(email);
       if (existe) {
         if (!mounted) return;
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: const Text(
+            content: Text(
               'Já existe uma conta com esse e-mail.',
-              style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+              style: CadastroTelaEstilo.textoSnackbar,
             ),
             backgroundColor: Colors.redAccent,
             behavior: SnackBarBehavior.floating,
@@ -61,16 +58,15 @@ class _CadastroScreenState extends State<CadastroScreen> {
         return;
       }
 
-      // Envia os dados para o NOVO controlador criptografado
       await LoginControlador.instance.register(nome, email, senha);
 
       if (!mounted) return;
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: const Text(
+          content: Text(
             'Conta criada com sucesso!',
-            style: TextStyle(fontWeight: FontWeight.bold, color: Colors.white),
+            style: CadastroTelaEstilo.textoSnackbar,
           ),
           backgroundColor: Colors.green,
           behavior: SnackBarBehavior.floating,
@@ -80,7 +76,6 @@ class _CadastroScreenState extends State<CadastroScreen> {
         ),
       );
 
-      // Volta para a tela de login após o cadastro com sucesso
       Navigator.pop(context);
     }
   }
@@ -90,40 +85,25 @@ class _CadastroScreenState extends State<CadastroScreen> {
     return Scaffold(
       body: Stack(
         children: [
-          // Fundo com Gradiente
           Container(
-            decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF3B0B59), Color(0xFF003D4C)],
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-              ),
+            decoration: BoxDecoration(
+              gradient: CadastroTelaEstilo.gradienteFundo,
             ),
           ),
-          // Círculo decorativo de fundo
           Positioned(
             top: -100,
             left: -50,
             child: Container(
               width: 300,
               height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF00E5FF).withAlpha(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF00E5FF).withAlpha(30),
-                    blurRadius: 100,
-                  ),
-                ],
+              decoration: CadastroTelaEstilo.decoracaoCirculoFundo(
+                CadastroTelaEstilo.corAcento,
               ),
             ),
           ),
-
           SafeArea(
             child: Column(
               children: [
-                // Botão de Voltar para o Login
                 Align(
                   alignment: Alignment.topLeft,
                   child: IconButton(
@@ -144,145 +124,101 @@ class _CadastroScreenState extends State<CadastroScreen> {
                           filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                           child: Container(
                             padding: const EdgeInsets.all(32),
-                            decoration: BoxDecoration(
-                              color: Colors.white.withAlpha(25),
-                              borderRadius: BorderRadius.circular(40),
-                              border: Border.all(
-                                color: Colors.white.withAlpha(51),
-                                width: 1.5,
-                              ),
-                            ),
+                            decoration:
+                                CadastroTelaEstilo.decoracaoGlassmorphism,
                             child: Form(
                               key: _formKey,
                               child: Column(
                                 mainAxisSize: MainAxisSize.min,
                                 children: [
-                                  // Um emoji colorido e alegre que transmite confraternização!
-                                  const Padding(
-                                    padding: EdgeInsets.only(bottom: 12),
-                                    child: Text(
-                                      '🎉', // Party Popper - O lança confetes!
-                                      style: TextStyle(
-                                        fontSize:
-                                            64, // Tamanho grande e impactante
-                                      ),
-                                    ),
+                                  Icon(
+                                    Icons.person_add_alt_1_rounded,
+                                    size: 80,
+                                    color: CadastroTelaEstilo.corAcento,
                                   ),
-                                  const SizedBox(height: 16),
-                                  const Text(
+                                  const SizedBox(height: 24),
+                                  Text(
                                     'Criar Conta',
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 28,
-                                      fontWeight: FontWeight.w900,
-                                    ),
+                                    style: CadastroTelaEstilo.textoTitulo,
                                   ),
+                                  const SizedBox(height: 8),
                                   const Text(
-                                    'Torne-se um Anfitrião🥳',
-                                    style: TextStyle(
-                                      color: Colors.white70,
-                                      fontSize: 14,
-                                    ),
+                                    'Preencha os dados abaixo',
+                                    style: CadastroTelaEstilo.textoSubtitulo,
                                   ),
-                                  const SizedBox(height: 32),
-
-                                  _inputField(
-                                    'Nome Completo',
-                                    Icons.person_outline,
+                                  const SizedBox(height: 40),
+                                  _buildTextField(
                                     controller: _nomeController,
-                                    validador: (v) =>
-                                        v!.isEmpty ? 'Preencha seu nome' : null,
+                                    label: 'Nome Completo',
+                                    icon: Icons.person_outline,
+                                    validator: (v) =>
+                                        v!.isEmpty ? 'Digite seu nome' : null,
                                   ),
                                   const SizedBox(height: 16),
-                                  _inputField(
-                                    'E-mail',
-                                    Icons.alternate_email,
+                                  _buildTextField(
                                     controller: _emailController,
-                                    validador: (v) => !v!.contains('@')
+                                    label: 'E-mail',
+                                    icon: Icons.email_outlined,
+                                    keyboardType: TextInputType.emailAddress,
+                                    validator: (v) => !v!.contains('@')
                                         ? 'E-mail inválido'
                                         : null,
                                   ),
                                   const SizedBox(height: 16),
-                                  _inputField(
-                                    'Senha',
-                                    Icons.lock_outline,
-                                    obscure: _ocultarSenha,
+                                  _buildTextField(
                                     controller: _senhaController,
-                                    validador: (v) => v!.length < 6
-                                        ? 'Mínimo de 6 caracteres'
-                                        : null,
+                                    label: 'Senha',
+                                    icon: Icons.lock_outline,
+                                    obscure: _ocultarSenha,
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         _ocultarSenha
-                                            ? Icons.visibility_off_rounded
-                                            : Icons.visibility_rounded,
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
                                         color: Colors.white70,
                                       ),
-                                      onPressed: () {
-                                        HapticFeedback.selectionClick();
-                                        setState(() {
-                                          _ocultarSenha = !_ocultarSenha;
-                                        });
-                                      },
+                                      onPressed: () => setState(
+                                        () => _ocultarSenha = !_ocultarSenha,
+                                      ),
                                     ),
+                                    validator: (v) => v!.length < 6
+                                        ? 'Mínimo 6 caracteres'
+                                        : null,
                                   ),
                                   const SizedBox(height: 16),
-
-                                  _inputField(
-                                    'Confirmar Senha',
-                                    Icons.lock_reset_rounded,
-                                    obscure: _ocultarConfirmaSenha,
+                                  _buildTextField(
                                     controller: _confirmaSenhaController,
-                                    validador: (v) => v != _senhaController.text
-                                        ? 'As senhas não coincidem'
-                                        : null,
+                                    label: 'Confirmar Senha',
+                                    icon: Icons.lock_reset_rounded,
+                                    obscure: _ocultarConfirmaSenha,
                                     suffixIcon: IconButton(
                                       icon: Icon(
                                         _ocultarConfirmaSenha
-                                            ? Icons.visibility_off_rounded
-                                            : Icons.visibility_rounded,
+                                            ? Icons.visibility_off
+                                            : Icons.visibility,
                                         color: Colors.white70,
                                       ),
-                                      onPressed: () {
-                                        HapticFeedback.selectionClick();
-                                        setState(() {
-                                          _ocultarConfirmaSenha =
-                                              !_ocultarConfirmaSenha;
-                                        });
-                                      },
+                                      onPressed: () => setState(
+                                        () => _ocultarConfirmaSenha =
+                                            !_ocultarConfirmaSenha,
+                                      ),
                                     ),
+                                    validator: (v) => v != _senhaController.text
+                                        ? 'As senhas não coincidem'
+                                        : null,
                                   ),
                                   const SizedBox(height: 40),
-
                                   SizedBox(
                                     width: double.infinity,
                                     height: 60,
                                     child: ElevatedButton(
-                                      style: ElevatedButton.styleFrom(
-                                        backgroundColor: const Color(
-                                          0xFF00E5FF,
-                                        ),
-                                        foregroundColor: const Color(
-                                          0xFF003D4C,
-                                        ),
-                                        elevation: 10,
-                                        shadowColor: const Color(
-                                          0xFF00E5FF,
-                                        ).withAlpha(128),
-                                        shape: RoundedRectangleBorder(
-                                          borderRadius: BorderRadius.circular(
-                                            20,
-                                          ),
-                                        ),
-                                      ),
+                                      style:
+                                          CadastroTelaEstilo.estiloBotaoElevado,
                                       onPressed: _realizarCadastro,
                                       child: const Text(
                                         'CADASTRAR',
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w900,
-                                          fontSize: 16,
-                                          letterSpacing: 1.5,
-                                        ),
+                                        style: CadastroTelaEstilo
+                                            .textoBotaoPrincipal,
                                       ),
                                     ),
                                   ),
@@ -303,37 +239,44 @@ class _CadastroScreenState extends State<CadastroScreen> {
     );
   }
 
-  Widget _inputField(
-    String l,
-    IconData i, {
+  Widget _buildTextField({
+    required TextEditingController controller,
+    required String label,
+    required IconData icon,
     bool obscure = false,
-    TextEditingController? controller,
-    String? Function(String?)? validador,
     Widget? suffixIcon,
-  }) => TextFormField(
-    controller: controller,
-    obscureText: obscure,
-    validator: validador,
-    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
-    decoration: InputDecoration(
-      prefixIcon: Icon(i, color: Colors.white70),
-      suffixIcon: suffixIcon,
-      labelText: l,
-      labelStyle: const TextStyle(color: Colors.white60),
-      filled: true,
-      fillColor: Colors.black.withAlpha(51),
-      border: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: BorderSide.none,
+    TextInputType? keyboardType,
+    String? Function(String?)? validator,
+  }) {
+    return TextFormField(
+      controller: controller,
+      obscureText: obscure,
+      keyboardType: keyboardType,
+      validator: validator,
+      style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+      decoration: InputDecoration(
+        prefixIcon: Icon(icon, color: Colors.white70),
+        suffixIcon: suffixIcon,
+        labelText: label,
+        labelStyle: const TextStyle(color: Colors.white60),
+        filled: true,
+        fillColor: Colors.black.withAlpha(51),
+        border: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: BorderSide.none,
+        ),
+        focusedBorder: OutlineInputBorder(
+          borderRadius: BorderRadius.circular(16),
+          borderSide: const BorderSide(
+            color: CadastroTelaEstilo.corAcento,
+            width: 1.5,
+          ),
+        ),
+        errorStyle: const TextStyle(
+          color: Colors.orangeAccent,
+          fontWeight: FontWeight.bold,
+        ),
       ),
-      focusedBorder: OutlineInputBorder(
-        borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
-      ),
-      errorStyle: const TextStyle(
-        color: Colors.redAccent,
-        fontWeight: FontWeight.bold,
-      ),
-    ),
-  );
+    );
+  }
 }

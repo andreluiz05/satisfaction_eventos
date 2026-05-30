@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../dashboard/dashboard_tela.dart';
 import '../perfil/perfil_tela.dart';
+import '../../tema/navegacao_principal_tela_estilo.dart';
 
 class MainNavigation extends StatefulWidget {
   const MainNavigation({super.key});
@@ -30,13 +31,16 @@ class _MainNavigationState extends State<MainNavigation> {
             icon: const Icon(Icons.dashboard_outlined),
             selectedIcon: Icon(
               Icons.dashboard_rounded,
-              color: theme.colorScheme.primary,
+              color: NavegacaoPrincipalEstilo.corIconeSelecionado(theme),
             ),
             label: 'Dashboard',
           ),
           NavigationDestination(
             icon: const Icon(Icons.person_outline),
-            selectedIcon: Icon(Icons.person, color: theme.colorScheme.primary),
+            selectedIcon: Icon(
+              Icons.person,
+              color: NavegacaoPrincipalEstilo.corIconeSelecionado(theme),
+            ),
             label: 'Perfil',
           ),
         ],

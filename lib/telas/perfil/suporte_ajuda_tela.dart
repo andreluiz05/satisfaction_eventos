@@ -1,15 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:url_launcher/url_launcher.dart';
+import '../../tema/suporte_ajuda_tela_estilo.dart';
 
-class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget também, dependendo de como você criou)
+class SuporteAjudaScreen extends StatelessWidget {
   const SuporteAjudaScreen({super.key});
 
-  // =========================================================
-  // 2. COLE AS SUAS FUNÇÕES AQUI (Dentro da classe, antes do build)
-  // =========================================================
-
-  // Função para abrir o WhatsApp externamente
   Future<void> chamarNoWhatsApp() async {
     final Uri whatsappUrl = Uri.parse("https://wa.me/5531998235716");
     if (await canLaunchUrl(whatsappUrl)) {
@@ -17,7 +13,6 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
     }
   }
 
-  // Função para abrir o aplicativo de E-mail
   Future<void> enviarEmail() async {
     final Uri emailUrl = Uri(
       scheme: 'mailto',
@@ -34,7 +29,7 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
     final theme = Theme.of(context);
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Suporte e Ajuda', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Suporte e Ajuda', style: SuporteAjudaTelaEstilo.estiloTituloAppBar),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -42,7 +37,6 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            // Cabeçalho Visual
             Center(
               child: Icon(Icons.help_outline_rounded, size: 80, color: theme.colorScheme.primary),
             ),
@@ -50,15 +44,14 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
             const Center(
               child: Text(
                 'Como podemos ajudar?',
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.w900),
+                style: SuporteAjudaTelaEstilo.estiloPerguntaCabecalho,
               ),
             ),
             const SizedBox(height: 32),
 
-            // SESSÃO DE FAQ (Perguntas Frequentes)
             Text(
               'PERGUNTAS FREQUENTES',
-              style: TextStyle(letterSpacing: 1.5, fontWeight: FontWeight.bold, color: Colors.grey[600]),
+              style: SuporteAjudaTelaEstilo.estiloCabecalhoSessao(Colors.grey[600]),
             ),
             const SizedBox(height: 16),
             
@@ -80,19 +73,17 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
 
             const SizedBox(height: 32),
 
-            // SESSÃO DE CONTATO (Atualizada Tecalli)
             Text(
               'Entre em Suporte conosco',
-              style: TextStyle(letterSpacing: 0.5, fontWeight: FontWeight.bold, color: theme.colorScheme.primary, fontSize: 18),
+              style: SuporteAjudaTelaEstilo.estiloTituloSessaoContato(theme.colorScheme),
             ),
             const SizedBox(height: 4),
             Text(
               'Para elogios, reportar bugs e outras coisas.',
-              style: TextStyle(color: Colors.grey[600], fontSize: 14),
+              style: SuporteAjudaTelaEstilo.estiloSubtituloSessaoContato(Colors.grey[600]),
             ),
             const SizedBox(height: 16),
             
-            // Card do Gmail Oficial com link mailto
             _buildContactCard(
               context,
               theme,
@@ -104,7 +95,6 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
             ),
             const SizedBox(height: 12),
             
-            // Card do WhatsApp Oficial com link direto
             _buildContactCard(
               context,
               theme,
@@ -120,32 +110,25 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
     );
   }
 
-  // Molde animado para as Perguntas Frequentes (ExpansionTile)
   Widget _buildFaqItem(ThemeData theme, String question, String answer) {
     return Container(
       margin: const EdgeInsets.only(bottom: 12),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
+      decoration: SuporteAjudaTelaEstilo.decoracaoCardFaq(theme.colorScheme),
       child: Theme(
-        data: theme.copyWith(dividerColor: Colors.transparent), // Remove as linhas padrão do Flutter
+        data: theme.copyWith(dividerColor: Colors.transparent),
         child: ExpansionTile(
           iconColor: theme.colorScheme.primary,
           collapsedIconColor: Colors.grey,
           title: Text(
             question,
-            style: TextStyle(fontWeight: FontWeight.w700, fontSize: 15, color: theme.colorScheme.onSurface),
+            style: SuporteAjudaTelaEstilo.estiloPerguntaFaq(theme.colorScheme),
           ),
           children: [
             Padding(
               padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
               child: Text(
                 answer,
-                style: TextStyle(color: theme.colorScheme.onSurfaceVariant, height: 1.5),
+                style: SuporteAjudaTelaEstilo.estiloRespostaFaq(theme.colorScheme),
               ),
             ),
           ],
@@ -154,25 +137,15 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
     );
   }
 
-  // Molde atualizado para receber a ação de clique do link externo
   Widget _buildContactCard(BuildContext context, ThemeData theme, IconData icon, String title, String subtitle, String actionText, VoidCallback onTap) {
     return Container(
       padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(color: Colors.black.withAlpha(10), blurRadius: 10, offset: const Offset(0, 4)),
-        ],
-      ),
+      decoration: SuporteAjudaTelaEstilo.decoracaoCardContato(theme.colorScheme),
       child: Row(
         children: [
           Container(
             padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: theme.colorScheme.primary.withAlpha(25),
-              borderRadius: BorderRadius.circular(12),
-            ),
+            decoration: SuporteAjudaTelaEstilo.decoracaoIconeContato(theme.colorScheme),
             child: Icon(icon, color: theme.colorScheme.primary),
           ),
           const SizedBox(width: 16),
@@ -180,18 +153,18 @@ class SuporteAjudaScreen extends StatelessWidget { // (Pode ser StatefulWidget t
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(title, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
+                Text(title, style: SuporteAjudaTelaEstilo.estiloTituloContato),
                 const SizedBox(height: 4),
-                Text(subtitle, style: const TextStyle(color: Colors.grey, fontSize: 14)),
+                Text(subtitle, style: SuporteAjudaTelaEstilo.estiloSubtituloContato),
               ],
             ),
           ),
           TextButton(
             onPressed: () {
               HapticFeedback.lightImpact();
-              onTap(); // Executa o redirecionamento automático
+              onTap();
             },
-            child: Text(actionText, style: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold)),
+            child: Text(actionText, style: SuporteAjudaTelaEstilo.estiloTextoBotaoContato(theme.colorScheme)),
           ),
         ],
       ),

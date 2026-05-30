@@ -6,6 +6,7 @@ import '../../backend/models/evento_modelo.dart';
 import '../../backend/models/convidado_modelo.dart';
 import '../../backend/utils/platform_image.dart';
 import '../eventos/detalhes_evento_tela.dart';
+import '../../tema/dashboard_tela_estilo.dart';
 
 //IMPORT ADICIONAIS PARA MANIPULAÇÃO DE IMAGENS E INTEGRAÇÃO COM O ImgBB
 import 'package:image_picker/image_picker.dart';
@@ -46,12 +47,7 @@ class Dashboard extends StatelessWidget {
                     children: [
                       Text(
                         'Meus Eventos',
-                        style: TextStyle(
-                          fontSize: 22,
-                          fontWeight: FontWeight.w900,
-                          color: theme.colorScheme.onSurface,
-                          letterSpacing: -0.5,
-                        ),
+                        style: DashboardEstilo.tituloAppBar(theme),
                       ),
                     ],
                   ),
@@ -70,11 +66,7 @@ class Dashboard extends StatelessWidget {
                           children: [
                             Text(
                               'Painel de Gestão',
-                              style: TextStyle(
-                                fontSize: 16,
-                                color: theme.colorScheme.onSurfaceVariant,
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: DashboardEstilo.subtituloAppBar(theme),
                             ),
                             const SizedBox(height: 8),
                             Container(
@@ -82,16 +74,11 @@ class Dashboard extends StatelessWidget {
                                 horizontal: 12,
                                 vertical: 6,
                               ),
-                              decoration: BoxDecoration(
-                                color: theme.colorScheme.primary.withAlpha(25),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
+                              decoration: DashboardEstilo.badgeOperacoes(theme),
                               child: Text(
                                 '${ctrl.eventos.length} operações ativas',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  color: theme.colorScheme.primary,
-                                  fontSize: 12,
+                                style: DashboardEstilo.badgeOperacoesTexto(
+                                  theme,
                                 ),
                               ),
                             ),
@@ -154,10 +141,7 @@ class Dashboard extends StatelessWidget {
                               alignment: Alignment.centerRight,
                               padding: const EdgeInsets.only(right: 24),
                               margin: const EdgeInsets.only(bottom: 16),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEF4444),
-                                borderRadius: BorderRadius.circular(24),
-                              ),
+                              decoration: DashboardEstilo.fundoDelecao,
                               child: const Icon(
                                 Icons.delete_outline_rounded,
                                 color: Colors.white,
@@ -181,10 +165,7 @@ class Dashboard extends StatelessWidget {
                   elevation: 8,
                   label: const Text(
                     'NOVO EVENTO',
-                    style: TextStyle(
-                      color: Colors.white,
-                      fontWeight: FontWeight.w800,
-                    ),
+                    style: DashboardEstilo.textoBotaoNovoEvento,
                   ),
                   icon: const Icon(Icons.add_rounded, color: Colors.white),
                 )
@@ -200,10 +181,7 @@ class Dashboard extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.grey.withAlpha(25),
-            shape: BoxShape.circle,
-          ),
+          decoration: DashboardEstilo.iconeEstadoVazio,
           child: const Icon(
             Icons.search_off_rounded,
             size: 64,
@@ -213,11 +191,7 @@ class Dashboard extends StatelessWidget {
         const SizedBox(height: 24),
         const Text(
           'Nenhum evento encontrado',
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: Colors.grey,
-          ),
+          style: DashboardEstilo.textoEstadoVazio,
         ),
       ],
     ),
@@ -229,10 +203,7 @@ class Dashboard extends StatelessWidget {
       children: [
         Container(
           padding: const EdgeInsets.all(24),
-          decoration: BoxDecoration(
-            color: Colors.grey.withAlpha(25),
-            shape: BoxShape.circle,
-          ),
+          decoration: DashboardEstilo.iconeEstadoVazio,
           child: const Icon(
             Icons.lock_outline_rounded,
             size: 64,
@@ -243,11 +214,7 @@ class Dashboard extends StatelessWidget {
         const Text(
           'Faça login para ver e criar seus eventos.',
           textAlign: TextAlign.center,
-          style: TextStyle(
-            fontSize: 20,
-            fontWeight: FontWeight.w800,
-            color: Colors.grey,
-          ),
+          style: DashboardEstilo.textoEstadoVazio,
         ),
       ],
     ),
@@ -259,17 +226,7 @@ class Dashboard extends StatelessWidget {
     ThemeData theme,
   ) => Container(
     margin: const EdgeInsets.only(bottom: 16),
-    decoration: BoxDecoration(
-      color: theme.colorScheme.surface,
-      borderRadius: BorderRadius.circular(24),
-      boxShadow: [
-        BoxShadow(
-          color: Colors.black.withAlpha(10),
-          blurRadius: 20,
-          offset: const Offset(0, 8),
-        ),
-      ],
-    ),
+    decoration: DashboardEstilo.cardEvento(theme),
     child: Material(
       color: Colors.transparent,
       child: InkWell(
@@ -289,10 +246,7 @@ class Dashboard extends StatelessWidget {
                 width: 64,
                 height: 64,
                 clipBehavior: Clip.antiAlias,
-                decoration: BoxDecoration(
-                  color: theme.colorScheme.primary.withAlpha(25),
-                  borderRadius: BorderRadius.circular(20),
-                ),
+                decoration: DashboardEstilo.imagemCardEvento(theme),
                 child:
                     e.imagemFundoUrl != null &&
                         e.imagemFundoUrl!.isNotEmpty &&
@@ -313,9 +267,7 @@ class Dashboard extends StatelessWidget {
                               // Enquanto não carrega, mostra a bolinha
                               return Center(
                                 child: CircularProgressIndicator(
-                                  color: Theme.of(context)
-                                      .colorScheme
-                                      .primary,
+                                  color: Theme.of(context).colorScheme.primary,
                                   value:
                                       loadingProgress.expectedTotalBytes != null
                                       ? loadingProgress.cumulativeBytesLoaded /
@@ -343,11 +295,7 @@ class Dashboard extends StatelessWidget {
                         color: Colors.transparent,
                         child: Text(
                           e.nome,
-                          style: TextStyle(
-                            fontWeight: FontWeight.w800,
-                            fontSize: 18,
-                            color: theme.colorScheme.onSurface,
-                          ),
+                          style: DashboardEstilo.tituloCardEvento(theme),
                           maxLines: 1,
                           overflow: TextOverflow.ellipsis,
                         ),
@@ -365,11 +313,7 @@ class Dashboard extends StatelessWidget {
                         Expanded(
                           child: Text(
                             e.local,
-                            style: const TextStyle(
-                              color: Colors.grey,
-                              fontWeight: FontWeight.w500,
-                              fontSize: 13,
-                            ),
+                            style: DashboardEstilo.localCardEvento,
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
@@ -387,17 +331,10 @@ class Dashboard extends StatelessWidget {
                       horizontal: 8,
                       vertical: 4,
                     ),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.primary.withAlpha(25),
-                      borderRadius: BorderRadius.circular(12),
-                    ),
+                    decoration: DashboardEstilo.badgeIdEvento(theme),
                     child: Text(
                       e.id,
-                      style: TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 12,
-                        color: theme.colorScheme.primary,
-                      ),
+                      style: DashboardEstilo.badgeIdEventoTexto(theme),
                     ),
                   ),
                   const SizedBox(height: 8),
@@ -455,7 +392,7 @@ class Dashboard extends StatelessWidget {
           contentPadding: EdgeInsets.zero,
           title: const Text(
             'Mostrar foto inteira',
-            style: TextStyle(fontWeight: FontWeight.w700),
+            style: DashboardEstilo.textoSwitch,
           ),
           value: mostrarFotoInteira,
           onChanged: onMostrarFotoInteiraChanged,
@@ -463,7 +400,7 @@ class Dashboard extends StatelessWidget {
         if (!mostrarFotoInteira) ...[
           Text(
             'Posição vertical: ${sliderLabel(alinhamentoFotoY)}',
-            style: const TextStyle(fontWeight: FontWeight.w600),
+            style: DashboardEstilo.textoSliderLabel,
           ),
           Slider(
             value: alinhamentoFotoY,
@@ -497,10 +434,7 @@ class Dashboard extends StatelessWidget {
       context: context,
       builder: (_) => AlertDialog(
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text(
-          'Editar Evento',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
+        title: const Text('Editar Evento', style: DashboardEstilo.tituloDialog),
         content: StatefulBuilder(
           builder: (context, setStateDialog) {
             Future<void> escolherImagem() async {
@@ -539,55 +473,50 @@ class Dashboard extends StatelessWidget {
                       child: Container(
                         height: 120,
                         width: double.infinity,
-                        decoration: BoxDecoration(
-                          color: Colors.grey.withAlpha(25),
-                          borderRadius: BorderRadius.circular(16),
-                          border: Border.all(
-                            color: Colors.grey.withAlpha(51),
-                            width: 2,
-                          ),
-                          image:
-                              caminhoImagemSelecionada != null &&
-                                  caminhoImagemSelecionada!.isNotEmpty &&
-                                  (caminhoImagemSelecionada!.startsWith(
-                                        'http',
-                                      ) ||
-                                      localFileImageProvider(
-                                            caminhoImagemSelecionada!,
-                                          ) !=
-                                          null)
-                              ? DecorationImage(
-                                  image:
-                                      caminhoImagemSelecionada!.startsWith(
-                                        'http',
-                                      )
-                                      ? NetworkImage(caminhoImagemSelecionada!)
-                                            as ImageProvider
-                                      : localFileImageProvider(
-                                          caminhoImagemSelecionada!,
-                                        )!,
-                                  fit: mostrarFotoInteira
-                                      ? BoxFit.contain
-                                      : BoxFit.cover,
-                                  alignment: Alignment(0, alinhamentoFotoY),
-                                )
-                              : null,
-                        ),
+                        decoration: DashboardEstilo.placeholderImagemDialog
+                            .copyWith(
+                              image:
+                                  caminhoImagemSelecionada != null &&
+                                      caminhoImagemSelecionada!.isNotEmpty &&
+                                      (caminhoImagemSelecionada!.startsWith(
+                                            'http',
+                                          ) ||
+                                          localFileImageProvider(
+                                                caminhoImagemSelecionada!,
+                                              ) !=
+                                              null)
+                                  ? DecorationImage(
+                                      image:
+                                          caminhoImagemSelecionada!.startsWith(
+                                            'http',
+                                          )
+                                          ? NetworkImage(
+                                                  caminhoImagemSelecionada!,
+                                                )
+                                                as ImageProvider
+                                          : localFileImageProvider(
+                                              caminhoImagemSelecionada!,
+                                            )!,
+                                      fit: mostrarFotoInteira
+                                          ? BoxFit.contain
+                                          : BoxFit.cover,
+                                      alignment: Alignment(0, alinhamentoFotoY),
+                                    )
+                                  : null,
+                            ),
                         child: isUploading
                             ? const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(),
-                              SizedBox(height: 12),
-                              Text(
-                                'Carregando foto, aguarde...',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ],
-                          )
+                                mainAxisAlignment: MainAxisAlignment.center,
+                                children: [
+                                  CircularProgressIndicator(),
+                                  SizedBox(height: 12),
+                                  Text(
+                                    'Carregando foto, aguarde...',
+                                    style:
+                                        DashboardEstilo.textoCarregandoImagem,
+                                  ),
+                                ],
+                              )
                             : caminhoImagemSelecionada == null ||
                                   caminhoImagemSelecionada!.isEmpty
                             ? const Column(
@@ -601,11 +530,7 @@ class Dashboard extends StatelessWidget {
                                   SizedBox(height: 8),
                                   Text(
                                     'Trocar foto',
-                                    style: TextStyle(
-                                      color: Colors.grey,
-                                      fontWeight: FontWeight.w600,
-                                      fontSize: 12,
-                                    ),
+                                    style: DashboardEstilo.textoTrocarFoto,
                                   ),
                                 ],
                               )
@@ -814,12 +739,7 @@ class Dashboard extends StatelessWidget {
             child: const Text('Cancelar'),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6A1B9A),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            style: DashboardEstilo.botaoSalvarDialog,
             onPressed: () {
               if (formKey.currentState!.validate()) {
                 final updated = Evento(
@@ -844,7 +764,10 @@ class Dashboard extends StatelessWidget {
                 Navigator.pop(context);
               }
             },
-            child: const Text('Salvar', style: TextStyle(color: Colors.white)),
+            child: const Text(
+              'Salvar',
+              style: DashboardEstilo.textoBotaoSalvar,
+            ),
           ),
         ],
       ),
@@ -904,10 +827,7 @@ class Dashboard extends StatelessWidget {
           children: [
             Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
             SizedBox(width: 10),
-            Text(
-              'Excluir Evento?',
-              style: TextStyle(fontWeight: FontWeight.w900),
-            ),
+            Text('Excluir Evento?', style: DashboardEstilo.tituloDialog),
           ],
         ),
         content: Text(
@@ -918,16 +838,11 @@ class Dashboard extends StatelessWidget {
             onPressed: () => Navigator.pop(context),
             child: const Text(
               'CANCELAR',
-              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
+              style: DashboardEstilo.textoBotaoCancelar,
             ),
           ),
           ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
+            style: DashboardEstilo.botaoExcluirDialog,
             onPressed: () async {
               HapticFeedback.heavyImpact();
               await SatisfactionController.instance.deletarEvento(eventoId);
@@ -939,10 +854,7 @@ class Dashboard extends StatelessWidget {
             },
             child: const Text(
               'EXCLUIR',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
+              style: DashboardEstilo.textoBotaoExcluir,
             ),
           ),
         ],
@@ -1016,16 +928,13 @@ class Dashboard extends StatelessWidget {
                     child: Container(
                       width: 48,
                       height: 6,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withAlpha(76),
-                        borderRadius: BorderRadius.circular(10),
-                      ),
+                      decoration: DashboardEstilo.handleBottomSheet,
                     ),
                   ),
                   const SizedBox(height: 32),
                   const Text(
                     'Criar Evento',
-                    style: TextStyle(fontWeight: FontWeight.w900, fontSize: 26),
+                    style: DashboardEstilo.tituloBottomSheet,
                   ),
                   const SizedBox(height: 24),
 
@@ -1035,50 +944,48 @@ class Dashboard extends StatelessWidget {
                     child: Container(
                       height: 140,
                       width: double.infinity,
-                      decoration: BoxDecoration(
-                        color: Colors.grey.withAlpha(25),
-                        borderRadius: BorderRadius.circular(20),
-                        border: Border.all(
-                          color: Colors.grey.withAlpha(51),
-                          width: 2,
-                        ),
-                        image:
-                            caminhoImagemSelecionada != null &&
-                                (caminhoImagemSelecionada!.startsWith('http') ||
-                                    localFileImageProvider(
-                                          caminhoImagemSelecionada!,
-                                        ) !=
-                                        null)
-                            ? DecorationImage(
-                                image:
-                                    caminhoImagemSelecionada!.startsWith('http')
-                                    ? NetworkImage(caminhoImagemSelecionada!)
-                                          as ImageProvider
-                                    : localFileImageProvider(
-                                        caminhoImagemSelecionada!,
-                                      )!,
-                                fit: mostrarFotoInteira
-                                    ? BoxFit.contain
-                                    : BoxFit.cover,
-                                alignment: Alignment(0, alinhamentoFotoY),
-                              )
-                            : null,
-                      ),
+                      decoration: DashboardEstilo.placeholderImagemBottomSheet
+                          .copyWith(
+                            image:
+                                caminhoImagemSelecionada != null &&
+                                    (caminhoImagemSelecionada!.startsWith(
+                                          'http',
+                                        ) ||
+                                        localFileImageProvider(
+                                              caminhoImagemSelecionada!,
+                                            ) !=
+                                            null)
+                                ? DecorationImage(
+                                    image:
+                                        caminhoImagemSelecionada!.startsWith(
+                                          'http',
+                                        )
+                                        ? NetworkImage(
+                                                caminhoImagemSelecionada!,
+                                              )
+                                              as ImageProvider
+                                        : localFileImageProvider(
+                                            caminhoImagemSelecionada!,
+                                          )!,
+                                    fit: mostrarFotoInteira
+                                        ? BoxFit.contain
+                                        : BoxFit.cover,
+                                    alignment: Alignment(0, alinhamentoFotoY),
+                                  )
+                                : null,
+                          ),
                       child: isUploading
                           ? const Column(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              CircularProgressIndicator(),
-                              SizedBox(height: 12),
-                              Text(
-                                'Carregando foto, aguarde...',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                CircularProgressIndicator(),
+                                SizedBox(height: 12),
+                                Text(
+                                  'Carregando foto, aguarde...',
+                                  style: DashboardEstilo.textoCarregandoImagem,
                                 ),
-                              ),
-                            ],
-                          )
+                              ],
+                            )
                           : caminhoImagemSelecionada == null
                           ? const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
@@ -1091,10 +998,7 @@ class Dashboard extends StatelessWidget {
                                 SizedBox(height: 8),
                                 Text(
                                   'Adicionar foto de fundo (Opcional)',
-                                  style: TextStyle(
-                                    color: Colors.grey,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: DashboardEstilo.textoTrocarFoto,
                                 ),
                               ],
                             )
@@ -1279,12 +1183,7 @@ class Dashboard extends StatelessWidget {
                     width: double.infinity,
                     height: 60,
                     child: ElevatedButton(
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: const Color(0xFF6A1B9A),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(20),
-                        ),
-                      ),
+                      style: DashboardEstilo.botaoSalvarBottomSheet,
                       onPressed: () {
                         if (formKey.currentState!.validate()) {
                           SatisfactionController.instance.salvarEvento(
@@ -1309,11 +1208,7 @@ class Dashboard extends StatelessWidget {
                       },
                       child: const Text(
                         'SALVAR',
-                        style: TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.w800,
-                          fontSize: 16,
-                        ),
+                        style: DashboardEstilo.textoBotaoSalvarBottomSheet,
                       ),
                     ),
                   ),

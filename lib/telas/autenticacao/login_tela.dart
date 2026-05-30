@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'dart:ui';
+import '../../tema/login_tela_estilo.dart';
 import '../navegacao/navegacao_principal_tela.dart';
 import '../eventos/confirmacao_presenca_tela.dart';
-import '../../backend/controllers/eventos_controlador.dart'; // Importante para buscar os eventos
+import '../../backend/controllers/eventos_controlador.dart';
 import '../../backend/controllers/login_controlador.dart';
 import 'cadastro_tela.dart';
 import 'recuperar_senha_tela.dart';
@@ -16,11 +17,8 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   bool isAnfitriao = false;
-
-  // Variável para controlar a visibilidade da senha
   bool _ocultarSenha = true;
 
-  // Controladores para os campos de texto
   final TextEditingController _emailController = TextEditingController();
   final TextEditingController _senhaController = TextEditingController();
   final TextEditingController _codigoController = TextEditingController();
@@ -33,7 +31,6 @@ class _LoginScreenState extends State<LoginScreen> {
     super.dispose();
   }
 
-  // Lógica de login para Anfitrião e Convidado
   void _fazerLogin() async {
     HapticFeedback.heavyImpact();
 
@@ -46,13 +43,11 @@ class _LoginScreenState extends State<LoginScreen> {
         return;
       }
 
-      // Login dinâmico usando o novo controlador seguro
       final usuario = await LoginControlador.instance.login(email, senha);
 
       if (!mounted) return;
 
       if (usuario != null) {
-        // Religa o Firebase para puxar os eventos OTIMIZADOS e filtrados desse anfitrião
         SatisfactionController.instance.monitorarFirebase();
         Navigator.pushReplacement(
           context,
@@ -70,7 +65,6 @@ class _LoginScreenState extends State<LoginScreen> {
       }
 
       try {
-        // Busca o evento diretamente no Firebase pelo código (permite acesso sem login de anfitrião)
         final evento = await SatisfactionController.instance
             .buscarEventoPorCodigo(codigo);
         if (evento == null) {
@@ -96,17 +90,10 @@ class _LoginScreenState extends State<LoginScreen> {
     }
   }
 
-  // Função para os alertas coloridos
   void _mostrarMensagem(String msg, {required bool isErro}) {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
-        content: Text(
-          msg,
-          style: const TextStyle(
-            fontWeight: FontWeight.bold,
-            color: Colors.white,
-          ),
-        ),
+        content: Text(msg, style: LoginTelaEstilo.textoSnackbar),
         backgroundColor: isErro ? Colors.redAccent : Colors.green,
         behavior: SnackBarBehavior.floating,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
@@ -121,11 +108,7 @@ class _LoginScreenState extends State<LoginScreen> {
         children: [
           Container(
             decoration: const BoxDecoration(
-              gradient: LinearGradient(
-                colors: [Color(0xFF3B0B59), Color(0xFF003D4C)],
-                begin: Alignment.topRight,
-                end: Alignment.bottomLeft,
-              ),
+              gradient: LoginTelaEstilo.gradienteFundo,
             ),
           ),
           Positioned(
@@ -134,19 +117,11 @@ class _LoginScreenState extends State<LoginScreen> {
             child: Container(
               width: 300,
               height: 300,
-              decoration: BoxDecoration(
-                shape: BoxShape.circle,
-                color: const Color(0xFF9C27B0).withAlpha(51),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF9C27B0).withAlpha(51),
-                    blurRadius: 100,
-                  ),
-                ],
+              decoration: LoginTelaEstilo.decoracaoCirculoFundo(
+                LoginTelaEstilo.corDecorativa,
               ),
             ),
           ),
-
           Center(
             child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 24),
@@ -156,14 +131,7 @@ class _LoginScreenState extends State<LoginScreen> {
                   filter: ImageFilter.blur(sigmaX: 20, sigmaY: 20),
                   child: Container(
                     padding: const EdgeInsets.all(32),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withAlpha(25),
-                      borderRadius: BorderRadius.circular(40),
-                      border: Border.all(
-                        color: Colors.white.withAlpha(51),
-                        width: 1.5,
-                      ),
-                    ),
+                    decoration: LoginTelaEstilo.decoracaoGlassmorphism,
                     child: Column(
                       mainAxisSize: MainAxisSize.min,
                       children: [
@@ -174,13 +142,9 @@ class _LoginScreenState extends State<LoginScreen> {
                           fit: BoxFit.contain,
                         ),
                         const SizedBox(height: 40),
-
                         Container(
                           padding: const EdgeInsets.all(4),
-                          decoration: BoxDecoration(
-                            color: Colors.black.withAlpha(76),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
+                          decoration: LoginTelaEstilo.decoracaoTabs,
                           child: Row(
                             children: [
                               _loginTab("Convidado", !isAnfitriao, () {
@@ -195,7 +159,6 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                         ),
                         const SizedBox(height: 32),
-
                         if (isAnfitriao) ...[
                           _inputField(
                             'E-mail do Organizador',
@@ -217,9 +180,7 @@ class _LoginScreenState extends State<LoginScreen> {
                               ),
                               onPressed: () {
                                 HapticFeedback.selectionClick();
-                                setState(() {
-                                  _ocultarSenha = !_ocultarSenha;
-                                });
+                                setState(() => _ocultarSenha = !_ocultarSenha);
                               },
                             ),
                           ),
@@ -240,10 +201,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                                 child: const Text(
                                   'Esqueceu a senha?',
-                                  style: TextStyle(
-                                    color: Colors.white70,
-                                    fontSize: 13,
-                                  ),
+                                  style: LoginTelaEstilo.textoLinkSimples,
                                 ),
                               ),
                               TextButton(
@@ -258,11 +216,7 @@ class _LoginScreenState extends State<LoginScreen> {
                                 },
                                 child: const Text(
                                   'Criar conta',
-                                  style: TextStyle(
-                                    color: Color(0xFF00E5FF),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 13,
-                                  ),
+                                  style: LoginTelaEstilo.textoLinkDestaque,
                                 ),
                               ),
                             ],
@@ -276,30 +230,15 @@ class _LoginScreenState extends State<LoginScreen> {
                           ),
                           const SizedBox(height: 40),
                         ],
-
                         SizedBox(
                           width: double.infinity,
                           height: 60,
                           child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: const Color(0xFF00E5FF),
-                              foregroundColor: const Color(0xFF003D4C),
-                              elevation: 10,
-                              shadowColor: const Color(
-                                0xFF00E5FF,
-                              ).withAlpha(128),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(20),
-                              ),
-                            ),
+                            style: LoginTelaEstilo.estiloBotaoElevado,
                             onPressed: _fazerLogin,
                             child: const Text(
                               'ENTRAR',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w900,
-                                fontSize: 16,
-                                letterSpacing: 1.5,
-                              ),
+                              style: LoginTelaEstilo.textoBotaoPrincipal,
                             ),
                           ),
                         ),
@@ -324,17 +263,15 @@ class _LoginScreenState extends State<LoginScreen> {
         curve: Curves.easeOutQuart,
         padding: const EdgeInsets.symmetric(vertical: 14),
         decoration: BoxDecoration(
-          color: active ? const Color(0xFF6A1B9A) : Colors.transparent,
+          color: active
+              ? LoginTelaEstilo.corDecorativa
+              : Colors.transparent, // Ajustado para usar cor do estilo
           borderRadius: BorderRadius.circular(16),
         ),
         child: Text(
           t,
           textAlign: TextAlign.center,
-          style: TextStyle(
-            color: active ? Colors.white : Colors.white54,
-            fontWeight: active ? FontWeight.bold : FontWeight.normal,
-            fontSize: 15,
-          ),
+          style: LoginTelaEstilo.estiloTextoTab(active),
         ),
       ),
     ),
@@ -349,7 +286,7 @@ class _LoginScreenState extends State<LoginScreen> {
   }) => TextField(
     controller: controller,
     obscureText: obscure,
-    style: const TextStyle(color: Colors.white, fontWeight: FontWeight.w500),
+    style: LoginTelaEstilo.estiloTextoInput,
     decoration: InputDecoration(
       prefixIcon: Icon(i, color: Colors.white70),
       suffixIcon: suffixIcon,
@@ -363,7 +300,10 @@ class _LoginScreenState extends State<LoginScreen> {
       ),
       focusedBorder: OutlineInputBorder(
         borderRadius: BorderRadius.circular(16),
-        borderSide: const BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+        borderSide: const BorderSide(
+          color: LoginTelaEstilo.corAcento,
+          width: 1.5,
+        ),
       ),
     ),
   );

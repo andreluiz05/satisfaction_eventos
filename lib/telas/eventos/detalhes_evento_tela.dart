@@ -6,6 +6,7 @@ import '../../backend/models/convidado_modelo.dart';
 import '../../backend/models/evento_modelo.dart';
 import '../../backend/services/imgbb_servico.dart';
 import '../../backend/utils/platform_image.dart';
+import '../../tema/detalhes_evento_tela_estilo.dart';
 import 'package:image_picker/image_picker.dart';
 import 'dart:ui';
 
@@ -34,7 +35,7 @@ class EventDetail extends StatelessWidget {
                 child: Text(
                   'Você precisa entrar com um anfitrião para ver ou editar eventos.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 18, fontWeight: FontWeight.w700),
+                  style: DetalhesEventoEstilo.textoSemAnfitriao,
                 ),
               ),
             ),
@@ -83,11 +84,7 @@ class EventDetail extends StatelessWidget {
                       color: Colors.transparent,
                       child: Text(
                         evento.nome,
-                        style: const TextStyle(
-                          fontWeight: FontWeight.w900,
-                          color: Colors.white,
-                          fontSize: 20,
-                        ),
+                        style: DetalhesEventoEstilo.nomeEventoAppBar,
                       ),
                     ),
                   ),
@@ -99,14 +96,7 @@ class EventDetail extends StatelessWidget {
                       // ALTERE O SEU CONTAINER PARA USAR DEGRADÊ COM TRANSPARÊNCIA (withAlpha):
                       Container(
                         decoration: BoxDecoration(
-                          gradient: LinearGradient(
-                            colors: [
-                              const Color(0xFF3B0B59).withAlpha(140),
-                              const Color(0xFF6A1B9A).withAlpha(220),
-                            ],
-                            begin: Alignment.topCenter,
-                            end: Alignment.bottomCenter,
-                          ),
+                          gradient: DetalhesEventoEstilo.gradienteFundoTransparente,
                         ),
                       ),
                       if (evento.imagemFundoUrl == null ||
@@ -137,10 +127,7 @@ class EventDetail extends StatelessWidget {
                                 const SizedBox(width: 8),
                                 Text(
                                   '${evento.data} • ${evento.horario}',
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: DetalhesEventoEstilo.infoEventoAppBar,
                                 ),
                               ],
                             ),
@@ -155,10 +142,7 @@ class EventDetail extends StatelessWidget {
                                 const SizedBox(width: 8),
                                 Text(
                                   evento.local,
-                                  style: const TextStyle(
-                                    color: Colors.white70,
-                                    fontWeight: FontWeight.w600,
-                                  ),
+                                  style: DetalhesEventoEstilo.infoEventoAppBar,
                                 ),
                               ],
                             ),
@@ -174,10 +158,7 @@ class EventDetail extends StatelessWidget {
                                 Flexible(
                                   child: Text(
                                     'Código: ${evento.id}',
-                                    style: const TextStyle(
-                                      color: Colors.white70,
-                                      fontWeight: FontWeight.w600,
-                                    ),
+                                    style: DetalhesEventoEstilo.infoEventoAppBar,
                                     overflow: TextOverflow.ellipsis,
                                   ),
                                 ),
@@ -188,27 +169,17 @@ class EventDetail extends StatelessWidget {
                       ),
                     ],
                   ),
-                ),
-              ),
+                  ),
+                  ),
 
-              // CARD DE DESCRIÇÃO
-              if (evento.descricao.isNotEmpty)
-                SliverToBoxAdapter(
+                  // CARD DE DESCRIÇÃO
+                  if (evento.descricao.isNotEmpty)
+                  SliverToBoxAdapter(
                   child: Padding(
                     padding: const EdgeInsets.fromLTRB(24, 24, 24, 0),
                     child: Container(
                       padding: const EdgeInsets.all(20),
-                      decoration: BoxDecoration(
-                        color: theme.colorScheme.surface,
-                        borderRadius: BorderRadius.circular(24),
-                        boxShadow: [
-                          BoxShadow(
-                            color: Colors.black.withAlpha(10),
-                            blurRadius: 20,
-                            offset: const Offset(0, 8),
-                          ),
-                        ],
-                      ),
+                      decoration: DetalhesEventoEstilo.cardDescricao(theme),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
@@ -222,46 +193,28 @@ class EventDetail extends StatelessWidget {
                               const SizedBox(width: 8),
                               Text(
                                 'Sobre o Evento',
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  fontSize: 16,
-                                  color: theme.colorScheme.onSurface,
-                                ),
+                                style: DetalhesEventoEstilo.tituloCardDescricao(theme),
                               ),
                             ],
                           ),
                           const SizedBox(height: 12),
                           Text(
                             evento.descricao,
-                            style: TextStyle(
-                              fontSize: 14,
-                              color: theme.colorScheme.onSurfaceVariant,
-                              height: 1.5,
-                            ),
+                            style: DetalhesEventoEstilo.textoCardDescricao(theme),
                           ),
                         ],
                       ),
                     ),
                   ),
-                ),
+                  ),
 
-              // CARD DE TAXA DE RESPOSTA
-              SliverToBoxAdapter(
-                child: Padding(
+                  // CARD DE TAXA DE RESPOSTA
+                  SliverToBoxAdapter(
+                  child: Padding(
                   padding: const EdgeInsets.all(24),
                   child: Container(
                     padding: const EdgeInsets.all(24),
-                    decoration: BoxDecoration(
-                      color: theme.colorScheme.surface,
-                      borderRadius: BorderRadius.circular(24),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withAlpha(10),
-                          blurRadius: 20,
-                          offset: const Offset(0, 8),
-                        ),
-                      ],
-                    ),
+                    decoration: DetalhesEventoEstilo.cardTaxaResposta(theme),
                     child: Column(
                       children: [
                         Row(
@@ -269,27 +222,17 @@ class EventDetail extends StatelessWidget {
                           children: [
                             Text(
                               'Taxa de Resposta',
-                              style: TextStyle(
-                                fontWeight: FontWeight.w800,
-                                fontSize: 18,
-                                color: theme.colorScheme.onSurface,
-                              ),
+                              style: DetalhesEventoEstilo.tituloCardTaxaResposta(theme),
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                 horizontal: 12,
                                 vertical: 6,
                               ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFF00E5FF).withAlpha(51),
-                                borderRadius: BorderRadius.circular(20),
-                              ),
+                              decoration: DetalhesEventoEstilo.badgePercentualResposta,
                               child: Text(
                                 '${(p * 100).toInt()}%',
-                                style: const TextStyle(
-                                  fontWeight: FontWeight.w900,
-                                  color: Color(0xFF00838F),
-                                ),
+                                style: DetalhesEventoEstilo.textoPercentualResposta,
                               ),
                             ),
                           ],
@@ -313,31 +256,24 @@ class EventDetail extends StatelessWidget {
                         const SizedBox(height: 12),
                         Text(
                           '${evento.convidados.where((c) => c.status != PresencaStatus.none).length} de ${evento.convidados.length} convidados responderam',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: Colors.grey[600],
-                            fontWeight: FontWeight.w600,
-                          ),
+                          style: DetalhesEventoEstilo.textoContagemResposta,
                         ),
                       ],
                     ),
                   ),
-                ),
-              ),
+                  ),
+                  ),
 
-              SliverPadding(
-                padding: const EdgeInsets.symmetric(horizontal: 24),
-                sliver: evento.convidados.isEmpty
+                  SliverPadding(
+                  padding: const EdgeInsets.symmetric(horizontal: 24),
+                  sliver: evento.convidados.isEmpty
                     ? SliverToBoxAdapter(
                         child: Center(
                           child: Padding(
                             padding: const EdgeInsets.all(40),
                             child: Text(
                               "Nenhum convidado.",
-                              style: TextStyle(
-                                color: Colors.grey.withAlpha(204),
-                                fontWeight: FontWeight.w600,
-                              ),
+                              style: DetalhesEventoEstilo.textoNenhumConvidado,
                             ),
                           ),
                         ),
@@ -347,10 +283,7 @@ class EventDetail extends StatelessWidget {
                           final c = evento.convidados[i];
                           return Container(
                             margin: const EdgeInsets.only(bottom: 12),
-                            decoration: BoxDecoration(
-                              color: theme.colorScheme.surface,
-                              borderRadius: BorderRadius.circular(20),
-                            ),
+                            decoration: DetalhesEventoEstilo.containerConvidado(theme),
                             child: ListTile(
                               contentPadding: const EdgeInsets.symmetric(
                                 horizontal: 16,
@@ -362,44 +295,24 @@ class EventDetail extends StatelessWidget {
                                 foregroundColor: theme.colorScheme.primary,
                                 child: Text(
                                   c.iniciais,
-                                  style: const TextStyle(
-                                    fontWeight: FontWeight.bold,
-                                  ),
+                                  style: DetalhesEventoEstilo.iniciaisConvidado,
                                 ),
                               ),
                               title: Text(
                                 c.nome,
-                                style: TextStyle(
-                                  fontWeight: FontWeight.w800,
-                                  color: c.status == PresencaStatus.accepted
-                                      ? Colors.green
-                                      : c.status == PresencaStatus.refused
-                                      ? Colors.red
-                                      : Colors.grey,
-                                ),
+                                style: DetalhesEventoEstilo.nomeConvidado(c),
                               ),
                               subtitle: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
                                     c.email,
-                                    style: const TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                    ),
+                                    style: DetalhesEventoEstilo.emailConvidado,
                                   ),
                                   const SizedBox(height: 4),
                                   Text(
                                     c.statusLabel,
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: c.status == PresencaStatus.accepted
-                                          ? Colors.green
-                                          : c.status == PresencaStatus.refused
-                                          ? Colors.red
-                                          : Colors.grey,
-                                      fontWeight: FontWeight.w700,
-                                    ),
+                                    style: DetalhesEventoEstilo.statusConvidado(c),
                                   ),
                                 ],
                               ),
@@ -441,12 +354,12 @@ class EventDetail extends StatelessWidget {
                           );
                         }, childCount: evento.convidados.length),
                       ),
-              ),
-              const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
-            ],
-          ),
-          floatingActionButton: isOwner
-              ? FloatingActionButton(
+                  ),
+                  const SliverPadding(padding: EdgeInsets.only(bottom: 100)),
+                  ],
+                  ),
+                  floatingActionButton: isOwner
+                  ? FloatingActionButton(
                   onPressed: () {
                     HapticFeedback.lightImpact();
                     _addGuest(context, evento.id);
@@ -456,160 +369,141 @@ class EventDetail extends StatelessWidget {
                     Icons.person_add_rounded,
                     color: Color(0xFF003D4C),
                   ),
-                )
-              : null,
-        );
-      },
-    );
-  }
+                  )
+                  : null,
+                  );
+                  },
+                  );
+                  }
 
-  void _confirmarDelecao(
-    BuildContext context,
-    String eventoId,
-    String convidadoId,
-    String nome,
-  ) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Row(
-          children: [
-            Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
-            SizedBox(width: 10),
-            Text('Excluir?', style: TextStyle(fontWeight: FontWeight.w900)),
-          ],
-        ),
-        content: Text(
-          'Tem certeza que deseja remover "$nome" da lista? Esta ação não pode ser desfeita.',
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text(
-              'CANCELAR',
-              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.bold),
-            ),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.redAccent,
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              HapticFeedback.heavyImpact();
-              SatisfactionController.instance.deletarConvidado(
-                eventoId,
-                convidadoId,
-              );
-              Navigator.pop(context);
-            },
-            child: const Text(
-              'EXCLUIR',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
+                  void _confirmarDelecao(
+                  BuildContext context,
+                  String eventoId,
+                  String convidadoId,
+                  String nome,
+                  ) {
+                  showDialog(
+                  context: context,
+                  builder: (context) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  title: const Row(
+                  children: [
+                  Icon(Icons.warning_amber_rounded, color: Colors.redAccent),
+                  SizedBox(width: 10),
+                  Text('Excluir?', style: DetalhesEventoEstilo.tituloDialogConfirmacao),
+                  ],
+                  ),
+                  content: Text(
+                  'Tem certeza que deseja remover "$nome" da lista? Esta ação não pode ser desfeita.',
+                  ),
+                  actions: [
+                  TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text(
+                  'CANCELAR',
+                  style: DetalhesEventoEstilo.textoBotaoCancelar,
+                  ),
+                  ),
+                  ElevatedButton(
+                  style: DetalhesEventoEstilo.botaoExcluir,
+                  onPressed: () {
+                  HapticFeedback.heavyImpact();
+                  SatisfactionController.instance.deletarConvidado(
+                  eventoId,
+                  convidadoId,
+                  );
+                  Navigator.pop(context);
+                  },
+                  child: const Text(
+                  'EXCLUIR',
+                  style: DetalhesEventoEstilo.textoBotaoExcluir,
+                  ),
+                  ),
+                  ],
+                  ),
+                  );
+                  }
 
-  void _addGuest(BuildContext context, String eventoId) {
-    _showGuestDialog(context, eventoId, null);
-  }
+                  void _addGuest(BuildContext context, String eventoId) {
+                  _showGuestDialog(context, eventoId, null);
+                  }
 
-  void _showGuestDialog(
-    BuildContext context,
-    String eventoId,
-    Convidado? convidado,
-  ) {
-    final formKey = GlobalKey<FormState>();
-    final n = TextEditingController(text: convidado?.nome ?? '');
-    final e = TextEditingController(text: convidado?.email ?? '');
-    final title = convidado == null ? 'Novo Convidado' : 'Editar Convidado';
+                  void _showGuestDialog(
+                  BuildContext context,
+                  String eventoId,
+                  Convidado? convidado,
+                  ) {
+                  final formKey = GlobalKey<FormState>();
+                  final n = TextEditingController(text: convidado?.nome ?? '');
+                  final e = TextEditingController(text: convidado?.email ?? '');
+                  final title = convidado == null ? 'Novo Convidado' : 'Editar Convidado';
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: Text(title, style: const TextStyle(fontWeight: FontWeight.w900)),
-        content: Form(
-          key: formKey,
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            children: [
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.withAlpha(25),
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Row(
+                  showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  title: Text(title, style: DetalhesEventoEstilo.tituloDialogConvidado),
+                  content: Form(
+                  key: formKey,
+                  child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                  Container(
+                  padding: const EdgeInsets.all(12),
+                  decoration: DetalhesEventoEstilo.containerCodigoEvento,
+                  child: Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     const Text(
                       'Código do Evento: ',
-                      style: TextStyle(fontWeight: FontWeight.w600),
+                      style: DetalhesEventoEstilo.labelCodigoEvento,
                     ),
                     Text(
                       eventoId,
-                      style: const TextStyle(
-                        fontWeight: FontWeight.w900,
-                        fontSize: 16,
-                      ),
+                      style: DetalhesEventoEstilo.valorCodigoEvento,
                     ),
                   ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: n,
-                decoration: InputDecoration(
+                  ),
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
+                  controller: n,
+                  decoration: InputDecoration(
                   labelText: 'Nome Completo',
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
-                ),
-                validator: (v) => v!.isEmpty ? 'Requerido' : null,
-              ),
-              const SizedBox(height: 12),
-              TextFormField(
-                controller: e,
-                decoration: InputDecoration(
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Requerido' : null,
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                  controller: e,
+                  decoration: InputDecoration(
                   labelText: 'E-mail',
                   filled: true,
                   border: OutlineInputBorder(
                     borderRadius: BorderRadius.circular(16),
                     borderSide: BorderSide.none,
                   ),
-                ),
-                validator: (v) => v!.isEmpty ? 'Requerido' : null,
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(context),
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6A1B9A),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                final guest = convidado == null
+                  ),
+                  validator: (v) => v!.isEmpty ? 'Requerido' : null,
+                  ),
+                  ],
+                  ),
+                  ),
+                  actions: [
+                  TextButton(
+                  onPressed: () => Navigator.pop(context),
+                  child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                  style: DetalhesEventoEstilo.botaoSalvarDialog,
+                  onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                  final guest = convidado == null
                     ? Convidado(
                         id: DateTime.now().toString(),
                         nome: n.text,
@@ -622,198 +516,192 @@ class EventDetail extends StatelessWidget {
                         status: convidado.status,
                       );
 
-                if (convidado == null) {
+                  if (convidado == null) {
                   SatisfactionController.instance.adicionarConvidado(
                     eventoId,
                     guest,
                   );
-                } else {
+                  } else {
                   SatisfactionController.instance.editarConvidado(
                     eventoId,
                     guest,
                   );
-                }
+                  }
 
-                Navigator.pop(context);
-              }
-            },
-            child: Text(
-              convidado == null ? 'Adicionar' : 'Salvar',
-              style: const TextStyle(color: Colors.white),
-            ),
-          ),
-        ],
-      ),
-    ).whenComplete(() {
-      n.dispose();
-      e.dispose();
-    });
-  }
+                  Navigator.pop(context);
+                  }
+                  },
+                  child: Text(
+                  convidado == null ? 'Adicionar' : 'Salvar',
+                  style: DetalhesEventoEstilo.textoBotaoSalvar,
+                  ),
+                  ),
+                  ],
+                  ),
+                  ).whenComplete(() {
+                  n.dispose();
+                  e.dispose();
+                  });
+                  }
 
-  void _showEditGuestDialog(
-    BuildContext context,
-    Evento evento,
-    Convidado convidado,
-  ) {
-    _showGuestDialog(context, evento.id, convidado);
-  }
+                  void _showEditGuestDialog(
+                  BuildContext context,
+                  Evento evento,
+                  Convidado convidado,
+                  ) {
+                  _showGuestDialog(context, evento.id, convidado);
+                  }
 
-  Widget _eventBackgroundImage(Evento evento) {
-    final imageUrl = evento.imagemFundoUrl;
-    if (imageUrl == null || imageUrl.isEmpty) return const SizedBox.shrink();
+                  Widget _eventBackgroundImage(Evento evento) {
+                  final imageUrl = evento.imagemFundoUrl;
+                  if (imageUrl == null || imageUrl.isEmpty) return const SizedBox.shrink();
 
-    final alignment = Alignment(0, evento.imagemFundoAlinhamentoY);
+                  final alignment = Alignment(0, evento.imagemFundoAlinhamentoY);
 
-    Widget image({required BoxFit fit}) {
-      if (imageUrl.startsWith('http')) {
-        return Image.network(
-          imageUrl,
-          fit: fit,
-          alignment: alignment,
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Center(
-              child: CircularProgressIndicator(
-                color: Theme.of(context).colorScheme.primary,
-                value: loadingProgress.expectedTotalBytes != null
+                  Widget image({required BoxFit fit}) {
+                  if (imageUrl.startsWith('http')) {
+                  return Image.network(
+                  imageUrl,
+                  fit: fit,
+                  alignment: alignment,
+                  loadingBuilder: (context, child, loadingProgress) {
+                  if (loadingProgress == null) return child;
+                  return Center(
+                  child: CircularProgressIndicator(
+                  color: Theme.of(context).colorScheme.primary,
+                  value: loadingProgress.expectedTotalBytes != null
                     ? loadingProgress.cumulativeBytesLoaded /
                           loadingProgress.expectedTotalBytes!
                     : null,
-              ),
-            );
-          },
-        );
-      }
-      return localFileImage(imageUrl, fit: fit, alignment: alignment);
-    }
+                  ),
+                  );
+                  },
+                  );
+                  }
+                  return localFileImage(imageUrl, fit: fit, alignment: alignment);
+                  }
 
-    if (!evento.imagemFundoMostrarInteira) {
-      return image(fit: BoxFit.cover);
-    }
+                  if (!evento.imagemFundoMostrarInteira) {
+                  return image(fit: BoxFit.cover);
+                  }
 
-    return Stack(
-      fit: StackFit.expand,
-      children: [
-        image(fit: BoxFit.cover),
-        ClipRect(
-          child: BackdropFilter(
-            filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
-            child: Container(color: Colors.black.withAlpha(120)),
-          ),
-        ),
-        image(fit: BoxFit.contain),
-      ],
-    );
-  }
+                  return Stack(
+                  fit: StackFit.expand,
+                  children: [
+                  image(fit: BoxFit.cover),
+                  ClipRect(
+                  child: BackdropFilter(
+                  filter: ImageFilter.blur(sigmaX: 25.0, sigmaY: 25.0),
+                  child: Container(decoration: DetalhesEventoEstilo.fundoOverlayBlur),
+                  ),
+                  ),
+                  image(fit: BoxFit.contain),
+                  ],
+                  );
+                  }
 
-  Widget _imageFitControls({
-    required bool hasImage,
-    required bool mostrarFotoInteira,
-    required double alinhamentoFotoY,
-    required ValueChanged<bool> onMostrarFotoInteiraChanged,
-    required ValueChanged<double> onAlinhamentoFotoChanged,
-  }) {
-    if (!hasImage) return const SizedBox.shrink();
+                  Widget _imageFitControls({
+                  required bool hasImage,
+                  required bool mostrarFotoInteira,
+                  required double alinhamentoFotoY,
+                  required ValueChanged<bool> onMostrarFotoInteiraChanged,
+                  required ValueChanged<double> onAlinhamentoFotoChanged,
+                  }) {
+                  if (!hasImage) return const SizedBox.shrink();
 
-    String sliderLabel(double value) {
-      if (value <= -0.5) return 'Topo';
-      if (value >= 0.5) return 'Base';
-      return 'Centro';
-    }
+                  String sliderLabel(double value) {
+                  if (value <= -0.5) return 'Topo';
+                  if (value >= 0.5) return 'Base';
+                  return 'Centro';
+                  }
 
-    return Column(
-      crossAxisAlignment: CrossAxisAlignment.start,
-      children: [
-        SwitchListTile(
-          contentPadding: EdgeInsets.zero,
-          title: const Text(
-            'Mostrar foto inteira',
-            style: TextStyle(fontWeight: FontWeight.w700),
-          ),
-          value: mostrarFotoInteira,
-          onChanged: onMostrarFotoInteiraChanged,
-        ),
-        if (!mostrarFotoInteira) ...[
-          Text(
-            'Posição vertical: ${sliderLabel(alinhamentoFotoY)}',
-            style: const TextStyle(fontWeight: FontWeight.w600),
-          ),
-          Slider(
-            value: alinhamentoFotoY,
-            min: -1,
-            max: 1,
-            divisions: 4,
-            label: sliderLabel(alinhamentoFotoY),
-            onChanged: onAlinhamentoFotoChanged,
-          ),
-        ],
-      ],
-    );
-  }
+                  return Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                  SwitchListTile(
+                  contentPadding: EdgeInsets.zero,
+                  title: const Text(
+                  'Mostrar foto inteira',
+                  style: DetalhesEventoEstilo.textoSwitch,
+                  ),
+                  value: mostrarFotoInteira,
+                  onChanged: onMostrarFotoInteiraChanged,
+                  ),
+                  if (!mostrarFotoInteira) ...[
+                  Text(
+                  'Posição vertical: ${sliderLabel(alinhamentoFotoY)}',
+                  style: DetalhesEventoEstilo.textoSliderLabel,
+                  ),
+                  Slider(
+                  value: alinhamentoFotoY,
+                  min: -1,
+                  max: 1,
+                  divisions: 4,
+                  label: sliderLabel(alinhamentoFotoY),
+                  onChanged: onAlinhamentoFotoChanged,
+                  ),
+                  ],
+                  ],
+                  );
+                  }
 
-  void _showEditEventDialog(BuildContext context, Evento evento) {
-    final formKey = GlobalKey<FormState>();
-    final nome = TextEditingController(text: evento.nome);
-    final local = TextEditingController(text: evento.local);
-    final data = TextEditingController(text: evento.data);
-    final horario = TextEditingController(text: evento.horario);
-    final desc = TextEditingController(text: evento.descricao);
-    String? caminhoImagemSelecionada = evento.imagemFundoUrl;
-    String? deleteUrlImagemSelecionada = evento.imagemFundoDeleteUrl;
-    bool mostrarFotoInteira = evento.imagemFundoMostrarInteira;
-    double alinhamentoFotoY = evento.imagemFundoAlinhamentoY;
-    bool isUploading = false;
+                  void _showEditEventDialog(BuildContext context, Evento evento) {
+                  final formKey = GlobalKey<FormState>();
+                  final nome = TextEditingController(text: evento.nome);
+                  final local = TextEditingController(text: evento.local);
+                  final data = TextEditingController(text: evento.data);
+                  final horario = TextEditingController(text: evento.horario);
+                  final desc = TextEditingController(text: evento.descricao);
+                  String? caminhoImagemSelecionada = evento.imagemFundoUrl;
+                  String? deleteUrlImagemSelecionada = evento.imagemFundoDeleteUrl;
+                  bool mostrarFotoInteira = evento.imagemFundoMostrarInteira;
+                  double alinhamentoFotoY = evento.imagemFundoAlinhamentoY;
+                  bool isUploading = false;
 
-    showDialog(
-      context: context,
-      builder: (_) => AlertDialog(
-        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
-        title: const Text(
-          'Editar Evento',
-          style: TextStyle(fontWeight: FontWeight.w900),
-        ),
-        content: StatefulBuilder(
-          builder: (context, setStateDialog) {
-            Future<void> escolherImagem() async {
-              final picker = ImagePicker();
-              final pickedFile = await picker.pickImage(
-                source: ImageSource.gallery,
-              );
+                  showDialog(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+                  title: const Text(
+                  'Editar Evento',
+                  style: DetalhesEventoEstilo.tituloDialogEdicao,
+                  ),
+                  content: StatefulBuilder(
+                  builder: (context, setStateDialog) {
+                  Future<void> escolherImagem() async {
+                  final picker = ImagePicker();
+                  final pickedFile = await picker.pickImage(
+                  source: ImageSource.gallery,
+                  );
 
-              if (pickedFile == null) return;
+                  if (pickedFile == null) return;
 
-              setStateDialog(() => isUploading = true);
-              final upload = await ImgbbServico.uploadImageBytes(
-                await pickedFile.readAsBytes(),
-              );
+                  setStateDialog(() => isUploading = true);
+                  final upload = await ImgbbServico.uploadImageBytes(
+                  await pickedFile.readAsBytes(),
+                  );
 
-              setStateDialog(() {
-                if (upload != null) {
+                  setStateDialog(() {
+                  if (upload != null) {
                   caminhoImagemSelecionada = upload.url;
                   deleteUrlImagemSelecionada = upload.deleteUrl;
-                }
-                isUploading = false;
-              });
-            }
+                  }
+                  isUploading = false;
+                  });
+                  }
 
-            return Form(
-              key: formKey,
-              child: SingleChildScrollView(
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                GestureDetector(
+                  return Form(
+                  key: formKey,
+                  child: SingleChildScrollView(
+                  child: Column(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                  GestureDetector(
                   onTap: escolherImagem,
                   child: Container(
                     height: 140,
                     width: double.infinity,
-                    decoration: BoxDecoration(
-                      color: Colors.grey.withAlpha(25),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: Colors.grey.withAlpha(51),
-                        width: 2,
-                      ),
+                    decoration: DetalhesEventoEstilo.containerImagemEdicao.copyWith(
                       image:
                           caminhoImagemSelecionada != null &&
                               caminhoImagemSelecionada!.isNotEmpty &&
@@ -845,10 +733,7 @@ class EventDetail extends StatelessWidget {
                               SizedBox(height: 12),
                               Text(
                                 'Carregando foto, aguarde...',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                                style: DetalhesEventoEstilo.textoCarregandoImagem,
                               ),
                             ],
                           )
@@ -865,10 +750,7 @@ class EventDetail extends StatelessWidget {
                               SizedBox(height: 8),
                               Text(
                                 'Adicionar foto de fundo',
-                                style: TextStyle(
-                                  color: Colors.grey,
-                                  fontWeight: FontWeight.w600,
-                                ),
+                                style: DetalhesEventoEstilo.textoAdicionarFoto,
                               ),
                             ],
                           )
@@ -924,9 +806,9 @@ class EventDetail extends StatelessWidget {
                             ),
                           ),
                   ),
-                ),
-                const SizedBox(height: 16),
-                _imageFitControls(
+                  ),
+                  const SizedBox(height: 16),
+                  _imageFitControls(
                   hasImage: caminhoImagemSelecionada != null &&
                       caminhoImagemSelecionada!.isNotEmpty,
                   mostrarFotoInteira: mostrarFotoInteira,
@@ -937,9 +819,9 @@ class EventDetail extends StatelessWidget {
                   onAlinhamentoFotoChanged: (value) {
                     setStateDialog(() => alinhamentoFotoY = value);
                   },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                   controller: nome,
                   decoration: InputDecoration(
                     labelText: 'Nome do Evento',
@@ -950,9 +832,9 @@ class EventDetail extends StatelessWidget {
                     ),
                   ),
                   validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                   controller: local,
                   decoration: InputDecoration(
                     labelText: 'Localização',
@@ -963,9 +845,9 @@ class EventDetail extends StatelessWidget {
                     ),
                   ),
                   validator: (v) => v!.isEmpty ? 'Obrigatório' : null,
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                   controller: data,
                   readOnly: true,
                   decoration: InputDecoration(
@@ -992,9 +874,9 @@ class EventDetail extends StatelessWidget {
                       data.text = _formatBrazilDate(selected);
                     }
                   },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                   controller: horario,
                   readOnly: true,
                   decoration: InputDecoration(
@@ -1024,9 +906,9 @@ class EventDetail extends StatelessWidget {
                       horario.text = _formatBrazilTime(selected);
                     }
                   },
-                ),
-                const SizedBox(height: 16),
-                TextFormField(
+                  ),
+                  const SizedBox(height: 16),
+                  TextFormField(
                   controller: desc,
                   maxLines: 3,
                   decoration: InputDecoration(
@@ -1038,34 +920,29 @@ class EventDetail extends StatelessWidget {
                       borderSide: BorderSide.none,
                     ),
                   ),
-                ),
-              ],
-            ),
-          ),
-        );
-          },
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              if (evento.imagemFundoUrl != caminhoImagemSelecionada &&
+                  ),
+                  ],
+                  ),
+                  ),
+                  );
+                  },
+                  ),
+                  actions: [
+                  TextButton(
+                  onPressed: () {
+                  if (evento.imagemFundoUrl != caminhoImagemSelecionada &&
                   evento.imagemFundoDeleteUrl != deleteUrlImagemSelecionada) {
-                ImgbbServico.deleteImage(deleteUrlImagemSelecionada);
-              }
-              Navigator.pop(context);
-            },
-            child: const Text('Cancelar'),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF6A1B9A),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(12),
-              ),
-            ),
-            onPressed: () {
-              if (formKey.currentState!.validate()) {
-                final updated = Evento(
+                  ImgbbServico.deleteImage(deleteUrlImagemSelecionada);
+                  }
+                  Navigator.pop(context);
+                  },
+                  child: const Text('Cancelar'),
+                  ),
+                  ElevatedButton(
+                  style: DetalhesEventoEstilo.botaoSalvarDialog,
+                  onPressed: () {
+                  if (formKey.currentState!.validate()) {
+                  final updated = Evento(
                   id: evento.id,
                   nome: nome.text,
                   local: local.text,
@@ -1078,27 +955,26 @@ class EventDetail extends StatelessWidget {
                   imagemFundoDeleteUrl: deleteUrlImagemSelecionada,
                   imagemFundoMostrarInteira: mostrarFotoInteira,
                   imagemFundoAlinhamentoY: alinhamentoFotoY,
-                );
-                SatisfactionController.instance.editarEvento(updated);
-                if (evento.imagemFundoUrl != caminhoImagemSelecionada) {
+                  );
+                  SatisfactionController.instance.editarEvento(updated);
+                  if (evento.imagemFundoUrl != caminhoImagemSelecionada) {
                   ImgbbServico.deleteImage(evento.imagemFundoDeleteUrl);
-                }
-                Navigator.pop(context);
-              }
-            },
-            child: const Text('Salvar', style: TextStyle(color: Colors.white)),
-          ),
-        ],
-      ),
-    ).whenComplete(() {
-      nome.dispose();
-      local.dispose();
-      data.dispose();
-      horario.dispose();
-      desc.dispose();
-    });
-  }
-
+                  }
+                  Navigator.pop(context);
+                  }
+                  },
+                  child: const Text('Salvar', style: DetalhesEventoEstilo.textoBotaoSalvar),
+                  ),
+                  ],
+                  ),
+                  ).whenComplete(() {
+                  nome.dispose();
+                  local.dispose();
+                  data.dispose();
+                  horario.dispose();
+                  desc.dispose();
+                  });
+                  }
   String _formatBrazilDate(DateTime value) {
     return '${value.day.toString().padLeft(2, '0')}/${value.month.toString().padLeft(2, '0')}/${value.year}';
   }

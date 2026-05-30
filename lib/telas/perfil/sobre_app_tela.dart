@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-
+import '../../tema/sobre_app_tela_estilo.dart';
 
 class SobreAppScreen extends StatelessWidget {
   const SobreAppScreen({super.key});
@@ -10,7 +10,7 @@ class SobreAppScreen extends StatelessWidget {
 
     return Scaffold(
       appBar: AppBar(
-        title: const Text('Sobre o App', style: TextStyle(fontWeight: FontWeight.bold)),
+        title: const Text('Sobre o App', style: SobreAppTelaEstilo.estiloTituloAppBar),
         centerTitle: true,
       ),
       body: SingleChildScrollView(
@@ -18,7 +18,6 @@ class SobreAppScreen extends StatelessWidget {
         child: Column(
           children: [
             const SizedBox(height: 20),
-            // Logo da Tecalli Tecnologia
             Center(
               child: Image.asset(
                 'assets/imagens/tecalli_tecnologia.png',
@@ -29,22 +28,17 @@ class SobreAppScreen extends StatelessWidget {
             const SizedBox(height: 40),
             Text(
               'Satisfaction Eventos',
-              style: TextStyle(
-                fontSize: 26,
-                fontWeight: FontWeight.w900,
-                color: theme.colorScheme.primary,
-              ),
+              style: SobreAppTelaEstilo.estiloTituloApp(theme.colorScheme),
             ),
             const Text(
               'Versão 1.0.0',
-              style: TextStyle(color: Colors.grey, fontWeight: FontWeight.w500),
+              style: SobreAppTelaEstilo.estiloVersao,
             ),
             
             const SizedBox(height: 30),
             const Divider(),
             const SizedBox(height: 30),
 
-            // SESSÃO: O PROBLEMA (A DOR)
             _buildInfoCard(
               context,
               Icons.warning_rounded,
@@ -53,7 +47,6 @@ class SobreAppScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // SESSÃO: O OBJETIVO
             _buildInfoCard(
               context,
               Icons.track_changes_rounded,
@@ -62,7 +55,6 @@ class SobreAppScreen extends StatelessWidget {
             ),
             const SizedBox(height: 16),
 
-            // SESSÃO: DETALHES TÉCNICOS E SEGURANÇA
             _buildInfoCard(
               context,
               Icons.security_rounded,
@@ -80,35 +72,28 @@ class SobreAppScreen extends StatelessWidget {
             const Text(
               'Este aplicativo foi desenvolvido com excelência pela',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16),
+              style: SobreAppTelaEstilo.estiloTextoRodape1,
             ),
             const Text(
               'Tecalli Tecnologia',
-              style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
+              style: SobreAppTelaEstilo.estiloTextoRodape2,
             ),
             const SizedBox(height: 40),
             const Text(
               'DESENVOLVEDORES',
-              style: TextStyle(
-                letterSpacing: 2,
-                fontWeight: FontWeight.bold,
-                color: Colors.grey,
-              ),
+              style: SobreAppTelaEstilo.estiloCabecalhoDevs,
             ),
             const SizedBox(height: 16),
-            // André Luiz
             _buildDevCard('André Luiz', 'Fundador & Desenvolvedor', Icons.rocket_launch_rounded),
             const SizedBox(height: 12),
-            // Ênio Enrique
             _buildDevCard('Enio Enrique', 'Desenvolvedor', Icons.code_rounded),
             const SizedBox(height: 12),
-            // Emerson
             _buildDevCard('Emerson', 'Desenvolvedor', Icons.code_rounded),
             const SizedBox(height: 60),
             const Text(
               '© 2026 Tecalli Tecnologia. Todos os direitos reservados.',
               textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 12, color: Colors.grey),
+              style: SobreAppTelaEstilo.estiloCopyright,
             ),
           ],
         ),
@@ -116,23 +101,12 @@ class SobreAppScreen extends StatelessWidget {
     );
   }
 
-  // Molde para os Cartões de Informação (Dor, Objetivo, Técnico)
   Widget _buildInfoCard(BuildContext context, IconData icon, String title, String description) {
     final theme = Theme.of(context);
     return Container(
       width: double.infinity,
       padding: const EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: theme.colorScheme.surface,
-        borderRadius: BorderRadius.circular(20),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withAlpha(10),
-            blurRadius: 15,
-            offset: const Offset(0, 5),
-          ),
-        ],
-      ),
+      decoration: SobreAppTelaEstilo.decoracaoCardInfo(theme.colorScheme),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
@@ -142,36 +116,24 @@ class SobreAppScreen extends StatelessWidget {
               const SizedBox(width: 10),
               Text(
                 title,
-                style: TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.w800,
-                  color: theme.colorScheme.onSurface,
-                ),
+                style: SobreAppTelaEstilo.estiloTituloCardInfo(theme.colorScheme),
               ),
             ],
           ),
           const SizedBox(height: 12),
           Text(
             description,
-            style: TextStyle(
-              fontSize: 14,
-              height: 1.5,
-              color: theme.colorScheme.onSurfaceVariant,
-            ),
+            style: SobreAppTelaEstilo.estiloDescricaoCardInfo(theme.colorScheme),
           ),
         ],
       ),
     );
   }
 
-  // Molde para os Cartões dos Desenvolvedores
   Widget _buildDevCard(String nome, String cargo, IconData icone) {
     return Container(
       padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-      decoration: BoxDecoration(
-        color: Colors.grey.withAlpha(20),
-        borderRadius: BorderRadius.circular(15),
-      ),
+      decoration: SobreAppTelaEstilo.decoracaoCardDev,
       child: Row(
         children: [
           Icon(icone, color: const Color(0xFF6A1B9A), size: 28),
@@ -182,12 +144,12 @@ class SobreAppScreen extends StatelessWidget {
               children: [
                 Text(
                   nome,
-                  style: const TextStyle(fontSize: 16, fontWeight: FontWeight.w700),
+                  style: SobreAppTelaEstilo.estiloNomeDev,
                 ),
                 const SizedBox(height: 4),
                 Text(
                   cargo,
-                  style: const TextStyle(fontSize: 13, color: Colors.grey, fontWeight: FontWeight.w600),
+                  style: SobreAppTelaEstilo.estiloCargoDev,
                 ),
               ],
             ),

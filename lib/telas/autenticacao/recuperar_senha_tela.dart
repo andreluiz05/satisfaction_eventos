@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import '../../backend/controllers/login_controlador.dart';
+import '../../tema/recuperar_senha_tela_estilo.dart';
 
 class RecuperarSenhaScreen extends StatefulWidget {
   const RecuperarSenhaScreen({super.key});
@@ -41,7 +42,7 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
           const SnackBar(
             content: Text(
               'Erro: E-mail não encontrado ou falha no envio. Tente novamente.',
-              style: TextStyle(fontWeight: FontWeight.bold),
+              style: RecuperarSenhaTelaEstilo.textoSnackbar,
             ),
             backgroundColor: Colors.redAccent,
           ),
@@ -63,7 +64,7 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
             Text(
               'E-mail Enviado!',
               textAlign: TextAlign.center,
-              style: TextStyle(fontWeight: FontWeight.w900),
+              style: RecuperarSenhaTelaEstilo.textoTituloDialogo,
             ),
           ],
         ),
@@ -75,22 +76,14 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
           SizedBox(
             width: double.infinity,
             child: ElevatedButton(
-              style: ElevatedButton.styleFrom(
-                backgroundColor: const Color(0xFF6A1B9A),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(16),
-                ),
-              ),
+              style: RecuperarSenhaTelaEstilo.estiloBotaoDialogo,
               onPressed: () {
                 Navigator.pop(context);
                 Navigator.pop(context);
               },
               child: const Text(
                 'VOLTAR PARA O LOGIN',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontWeight: FontWeight.bold,
-                ),
+                style: RecuperarSenhaTelaEstilo.textoBotaoDialogo,
               ),
             ),
           ),
@@ -102,7 +95,7 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFF1E293B),
+      backgroundColor: RecuperarSenhaTelaEstilo.corFundo,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
@@ -119,31 +112,24 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
                 const Icon(
                   Icons.lock_reset_rounded,
                   size: 100,
-                  color: Color(0xFF00E5FF),
+                  color: RecuperarSenhaTelaEstilo.corAcento,
                 ),
                 const SizedBox(height: 24),
                 const Text(
                   'Esqueceu sua senha?',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w900,
-                    color: Colors.white,
-                  ),
+                  style: RecuperarSenhaTelaEstilo.textoTitulo,
                 ),
                 const SizedBox(height: 12),
                 const Text(
                   'Digite o e-mail cadastrado na sua conta. Nós enviaremos uma senha temporária para você.',
                   textAlign: TextAlign.center,
-                  style: TextStyle(fontSize: 15, color: Colors.white70),
+                  style: RecuperarSenhaTelaEstilo.textoSubtitulo,
                 ),
                 const SizedBox(height: 40),
 
                 TextFormField(
                   controller: _emailController,
-                  style: const TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.w500,
-                  ),
+                  style: RecuperarSenhaTelaEstilo.estiloTextoInput,
                   keyboardType: TextInputType.emailAddress,
                   decoration: InputDecoration(
                     prefixIcon: const Icon(
@@ -151,7 +137,7 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
                       color: Colors.white70,
                     ),
                     labelText: 'E-mail',
-                    labelStyle: const TextStyle(color: Colors.white60),
+                    labelStyle: RecuperarSenhaTelaEstilo.estiloLabelInput,
                     filled: true,
                     fillColor: Colors.black.withAlpha(51),
                     border: OutlineInputBorder(
@@ -161,7 +147,7 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
                     focusedBorder: OutlineInputBorder(
                       borderRadius: BorderRadius.circular(16),
                       borderSide: const BorderSide(
-                        color: Color(0xFF00E5FF),
+                        color: RecuperarSenhaTelaEstilo.corAcento,
                         width: 1.5,
                       ),
                     ),
@@ -176,23 +162,13 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
                   width: double.infinity,
                   height: 60,
                   child: ElevatedButton(
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF6A1B9A),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(16),
-                      ),
-                      elevation: 8,
-                    ),
+                    style: RecuperarSenhaTelaEstilo.estiloBotaoPrincipal,
                     onPressed: _enviando ? null : _enviarEmail,
                     child: _enviando
                         ? const CircularProgressIndicator(color: Colors.white)
                         : const Text(
                             'ENVIAR E-MAIL',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 1.5,
-                            ),
+                            style: RecuperarSenhaTelaEstilo.textoBotaoPrincipal,
                           ),
                   ),
                 ),
