@@ -1,4 +1,4 @@
-# 🎟️ Satisfaction Eventos
+# 🎉 Satisfaction Eventos
 
 <div align="center">
   <img src="assets/imagens/logo_marca.png" alt="Logo Satisfaction Eventos" width="150"/>
