@@ -129,7 +129,7 @@ Este projeto segue as normas de desenvolvimento de software, incluindo a documen
 
 ## 🙏 Agradecimentos
 
-- Professor Ítalo Nunes,do curso de **Análise e Desenvolvimento de Sistemas** da **Uninassau**
+- Professor Ítalo Nunes, do curso de **Análise e Desenvolvimento de Sistemas** da **Uninassau**
 - Comunidade **Flutter** pelos pacotes e recursos open source
 
 ## 📄 Licença
