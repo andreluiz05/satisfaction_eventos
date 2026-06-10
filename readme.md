@@ -1,4 +1,4 @@
-# 🎟️ Satisfaction Eventos
+# 🎉 Satisfaction Eventos
 
 <div align="center">
   <img src="assets/imagens/logo_marca.png" alt="Logo Satisfaction Eventos" width="150"/>
@@ -129,9 +129,12 @@ Este projeto segue as normas de desenvolvimento de software, incluindo a documen
 
 ## 🙏 Agradecimentos
 
-- Professores do curso de **Análise e Desenvolvimento de Sistemas** da **Uninassau**
+- Professor Ítalo Nunes, do curso de **Análise e Desenvolvimento de Sistemas** da **Uninassau**
 - Comunidade **Flutter** pelos pacotes e recursos open source
 
 ## 📄 Licença
 
 Este projeto está sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
+
+## 📷 Link da Apresentação:
+https://canva.link/o3ik7fglrbsloyx 
