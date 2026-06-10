@@ -69,7 +69,7 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
           ],
         ),
         content: Text(
-          'Acabamos de enviar sua nova senha temporária para o e-mail:\n\n$email',
+          'Acabamos de enviar o link de redefinição de senha para o e-mail:\n\n$email',
           textAlign: TextAlign.center,
         ),
         actions: [
@@ -121,7 +121,7 @@ class _RecuperarSenhaScreenState extends State<RecuperarSenhaScreen> {
                 ),
                 const SizedBox(height: 12),
                 const Text(
-                  'Digite o e-mail cadastrado na sua conta. Nós enviaremos uma senha temporária para você.',
+                  'Digite o e-mail cadastrado na sua conta. Nós enviaremos um link de redefinição de senha para você.',
                   textAlign: TextAlign.center,
                   style: RecuperarSenhaTelaEstilo.textoSubtitulo,
                 ),

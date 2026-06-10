@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'dart:convert';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_database/firebase_database.dart';
-//RESPONSAVEIS PELO ESQUECEU SENHA "EMAILJS"
-import 'dart:math';
-import 'package:http/http.dart' as http;
-// ----------------------------------
 
 import '../models/anfitriao_modelo.dart';
 import 'eventos_controlador.dart';
@@ -82,6 +79,12 @@ class LoginControlador extends ChangeNotifier {
   }
 
   Future<void> signOut() async {
+    try {
+      await FirebaseAuth.instance.signOut();
+    } catch (e) {
+      debugPrint('Erro ao encerrar sessão no Firebase Auth: $e');
+    }
+
     _current = null;
     final prefs = await SharedPreferences.getInstance();
     await prefs.remove(_prefsKey);
@@ -92,15 +95,21 @@ class LoginControlador extends ChangeNotifier {
   // --- Método de exclusão de conta ---
   Future<void> deletarConta() async {
     if (_current == null) return;
-    
+
     if (_current!.id != null && _current!.id!.isNotEmpty) {
       // 1. Apaga todos os eventos vinculados a este anfitrião
       await SatisfactionController.instance.deletarTodosEventosDoAnfitriao(_current!.id!);
-      
+
       // 2. Apaga o registro do anfitrião no nó 'anfitriaos' do Firebase
       await _dbRef.child(_current!.id!).remove();
+
+      try {
+        await FirebaseAuth.instance.currentUser?.delete();
+      } catch (e) {
+        debugPrint('Erro ao excluir conta do Firebase Auth: $e');
+      }
     }
-    
+
     // 3. Limpa o cache local e desloga
     await signOut();
   }
@@ -123,12 +132,30 @@ class LoginControlador extends ChangeNotifier {
     );
 
     try {
-      final newRef = _dbRef.push();
-      await newRef.set(novo.toJson());
-      novo.id = newRef.key;
-    } catch (_) {
-      // fallback: salvar localmente
-      await _saveLocalUser(novo);
+      final credential = await FirebaseAuth.instance.createUserWithEmailAndPassword(
+        email: email,
+        password: password,
+      );
+
+      final uid = credential.user?.uid;
+      if (uid == null || uid.isEmpty) {
+        throw Exception('Usuário não foi criado pelo Firebase Authentication.');
+      }
+
+      novo.id = uid;
+      await _dbRef.child(uid).set(novo.toJson());
+
+      await credential.user?.updateDisplayName(nome);
+    } catch (e) {
+      debugPrint('Falha ao registrar com Firebase Auth, usando fallback do banco local: $e');
+
+      try {
+        final newRef = _dbRef.push();
+        await newRef.set(novo.toJson());
+        novo.id = newRef.key;
+      } catch (_) {
+        await _saveLocalUser(novo);
+      }
     }
 
     _current = novo;
@@ -145,41 +172,47 @@ class LoginControlador extends ChangeNotifier {
     notifyListeners();
 
     try {
-      // Busca a lista inteira para evitar o erro de Indexação do Firebase
-      final snapshot = await _dbRef.get();
+      final userCredential = await FirebaseAuth.instance.signInWithEmailAndPassword(
+        email: email.trim(),
+        password: password,
+      );
 
-      if (snapshot.exists) {
-        // Usamos 'as Map' puro para evitar erros de tipagem no Flutter Web
-        final dados = snapshot.value as Map;
-        
-        for (final key in dados.keys) {
-          final mapa = Map<String, dynamic>.from(dados[key] as Map);
-          mapa['id'] = key.toString();
-          
-          // Filtra o e-mail manualmente no código
-          if (mapa['email'] == email) {
-            final anfitriao = AnfitriaoModelo.fromJson(mapa);
-            
-            // Verifica se a senha digitada bate com a criptografada
-            if (anfitriao.verifyPassword(password)) {
-              _current = anfitriao;
-              await _saveCurrentToPrefs(anfitriao);
-              isCarregando = false;
-              notifyListeners();
-              return anfitriao;
-            } else {
-              // Encontrou o e-mail, mas a senha está errada
-              break; 
-            }
-          }
+      final uid = userCredential.user?.uid;
+      if (uid != null && uid.isNotEmpty) {
+        final snapshot = await _dbRef.child(uid).get();
+
+        if (snapshot.exists && snapshot.value is Map) {
+          final mapa = Map<String, dynamic>.from(snapshot.value as Map);
+          mapa['id'] = uid;
+
+          final anfitriao = AnfitriaoModelo.fromJson(mapa);
+          _current = anfitriao;
+          await _saveCurrentToPrefs(anfitriao);
+          isCarregando = false;
+          notifyListeners();
+          return anfitriao;
         }
+
+        final fallback = AnfitriaoModelo(
+          id: uid,
+          nome: userCredential.user?.displayName?.trim().isNotEmpty == true
+              ? userCredential.user!.displayName!
+              : email.split('@').first,
+          email: userCredential.user?.email ?? email.trim(),
+          passwordHash: 'firebase-auth',
+        );
+
+        _current = fallback;
+        await _saveCurrentToPrefs(fallback);
+        isCarregando = false;
+        notifyListeners();
+        return fallback;
       }
     } catch (e) {
-      // Agora, se algo der errado, veremos no console!
-      debugPrint("Erro detalhado no login do Firebase: $e");
+      debugPrint('Falha no login com Firebase Auth: $e');
     }
 
-    // fallback: procurar na lista local
+    // fallback: procurar na lista local para compatibilidade com contas salvas offline
     final local = await _loadLocalUsers();
     for (final anfit in local) {
       if (anfit.email == email && anfit.verifyPassword(password)) {
@@ -217,7 +250,8 @@ class LoginControlador extends ChangeNotifier {
   /// Verifica se já existe um anfitrião com o e-mail informado,
   /// tanto no Firebase quanto na lista local.
   Future<bool> emailExists(String email) async {
-    final emailLower = email.toLowerCase();
+    final emailLower = email.trim().toLowerCase();
+
     try {
       final snapshot = await _dbRef.get();
       if (snapshot.exists) {
@@ -241,89 +275,30 @@ class LoginControlador extends ChangeNotifier {
   }
   /// Verifica se o e-mail existe no banco de dados
   Future<bool> verificarEmailParaRecuperacao(String email) async {
-    isCarregando = true;
-    notifyListeners();
-
-    try {
-      final snapshot = await _dbRef.get();
-
-      if (snapshot.exists) {
-        final dados = snapshot.value as Map;
-        for (final key in dados.keys) {
-          final mapa = Map<String, dynamic>.from(dados[key] as Map);
-          if (mapa['email'] == email) {
-            isCarregando = false;
-            notifyListeners();
-            return true; 
-          }
-        }
-      }
-    } catch (e) {
-      debugPrint("Erro ao verificar email: $e");
-    }
-
-    isCarregando = false;
-    notifyListeners();
-    return false; 
+    final existe = await emailExists(email);
+    return existe;
   }
 
-  /// Gera uma senha temporária, atualiza no Firebase (com Bcrypt) e envia via EmailJS
+  /// Envia um e-mail de redefinição de senha via Firebase Authentication.
   Future<bool> enviarEmailRecuperacao(String email) async {
     isCarregando = true;
     notifyListeners();
 
     try {
-      final snapshot = await _dbRef.get();
-      String? anfitriaoId;
-      AnfitriaoModelo? anfitriaoEncontrado;
-
-      if (snapshot.exists) {
-        final dados = snapshot.value as Map;
-        for (final key in dados.keys) {
-          final mapa = Map<String, dynamic>.from(dados[key] as Map);
-          if (mapa['email'] == email) {
-            anfitriaoId = key.toString();
-            mapa['id'] = anfitriaoId;
-            anfitriaoEncontrado = AnfitriaoModelo.fromJson(mapa);
-            break;
-          }
-        }
-      }
-
-      if (anfitriaoId != null && anfitriaoEncontrado != null) {
-        final random = Random();
-        final novaSenha = (100000 + random.nextInt(900000)).toString();
-
-        anfitriaoEncontrado.setPassword(novaSenha);
-        await _dbRef.child(anfitriaoId).update({
-          'passwordHash': anfitriaoEncontrado.passwordHash
-        });
-
-        final url = Uri.parse('https://api.emailjs.com/api/v1.0/email/send');
-        final response = await http.post(
-          url,
-          headers: {'Content-Type': 'application/json'},
-          body: json.encode({
-            'service_id': 'gmailsatisfactionevents',
-            'template_id': 'template_a70by6s', //
-            'user_id': '-adY6aDjf0UMS5YWN',
-            'template_params': {
-              'to_email': email,
-              'temp_password': novaSenha,
-            }
-          }),
-        );
-
-        isCarregando = false;
-        notifyListeners();
-        return response.statusCode == 200;
-      }
+      await FirebaseAuth.instance.sendPasswordResetEmail(email: email.trim());
+      isCarregando = false;
+      notifyListeners();
+      return true;
+    } on FirebaseAuthException catch (e) {
+      debugPrint('Erro ao enviar e-mail de recuperação: $e');
+      isCarregando = false;
+      notifyListeners();
+      return false;
     } catch (e) {
-      debugPrint("Erro ao recuperar senha: $e");
+      debugPrint('Erro inesperado ao enviar e-mail de recuperação: $e');
+      isCarregando = false;
+      notifyListeners();
+      return false;
     }
-
-    isCarregando = false;
-    notifyListeners();
-    return false; 
   }
 }

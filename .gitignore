@@ -47,3 +47,8 @@ app.*.map.json
 linux/flutter/generated_plugin_registrant.cc
 /macos
 /linux
+
+
+# Exceção para o arquivo APK gerado, que pode ser necessário para distribuição ou testes.
+!build\app\outputs\flutter-apk\app-release.apk
+linux/flutter/generated_plugin_registrant.cc
