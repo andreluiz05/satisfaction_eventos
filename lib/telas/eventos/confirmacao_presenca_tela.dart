@@ -71,18 +71,84 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
 
     try {
       final convidado = widget.evento.convidados.firstWhere(
-        (c) => c.email.toLowerCase() == emailDigitado
+        (c) => c.email.toLowerCase() == emailDigitado,
       );
       setState(() {
         _convidadoEncontrado = convidado;
         _buscou = true;
       });
+      _mostrarDialogoConfirmacao();
     } catch (e) {
       setState(() {
         _convidadoEncontrado = null;
         _buscou = true;
       });
     }
+  }
+
+  void _mostrarDialogoConfirmacao() {
+    if (_convidadoEncontrado == null) return;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (dialogContext) => AlertDialog(
+        backgroundColor: Colors.white,
+        surfaceTintColor: Colors.transparent,
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(24)),
+        titlePadding: const EdgeInsets.fromLTRB(24, 24, 24, 8),
+        contentPadding: const EdgeInsets.fromLTRB(24, 0, 24, 16),
+        title: const Icon(
+          Icons.help_outline_rounded,
+          color: ConfirmacaoPresencaEstilo.corDecorativa,
+          size: 64,
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            Text(
+              'Olá, ${_convidadoEncontrado!.nome}!\nVocê irá a este evento?',
+              textAlign: TextAlign.center,
+              style: ConfirmacaoPresencaEstilo.textoSaudacao.copyWith(color: const Color(0xFF1F2937)),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Escolha uma opção para confirmar sua presença.',
+              textAlign: TextAlign.center,
+              style: ConfirmacaoPresencaEstilo.textoDialog.copyWith(color: Colors.black54),
+            ),
+          ],
+        ),
+        actionsPadding: const EdgeInsets.fromLTRB(24, 0, 24, 24),
+        actions: [
+          Row(
+            children: [
+              Expanded(
+                child: OutlinedButton(
+                  style: ConfirmacaoPresencaEstilo.botaoNaoIrei,
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                    _responderConvite(PresencaStatus.refused);
+                  },
+                  child: const Text('NÃO IREI', style: ConfirmacaoPresencaEstilo.textoBotaoNaoIrei),
+                ),
+              ),
+              const SizedBox(width: 16),
+              Expanded(
+                child: ElevatedButton(
+                  style: ConfirmacaoPresencaEstilo.botaoConfirmar,
+                  onPressed: () {
+                    Navigator.pop(dialogContext);
+                    _responderConvite(PresencaStatus.accepted);
+                  },
+                  child: const Text('CONFIRMAR', style: ConfirmacaoPresencaEstilo.textoBotaoConfirmar),
+                ),
+              ),
+            ],
+          ),
+        ],
+      ),
+    );
   }
 
   void _responderConvite(PresencaStatus novoStatus) {
@@ -230,41 +296,6 @@ class _ConfirmacaoPresencaScreenState extends State<ConfirmacaoPresencaScreen> {
                             ]),
                           ),
 
-                        if (_buscou && _convidadoEncontrado != null)
-                          Container(
-                            padding: const EdgeInsets.all(24),
-                            decoration: ConfirmacaoPresencaEstilo.containerSucesso,
-                            child: Column(
-                              children: [
-                                CircleAvatar(radius: 30, backgroundColor: ConfirmacaoPresencaEstilo.corDecorativa.withAlpha(25), child: Text(_convidadoEncontrado!.iniciais, style: ConfirmacaoPresencaEstilo.textoIniciais)),
-                                const SizedBox(height: 16),
-                                Text('Olá, ${_convidadoEncontrado!.nome}!', style: ConfirmacaoPresencaEstilo.textoSaudacao),
-                                const SizedBox(height: 8),
-                                const Text('Você irá a este evento?', style: ConfirmacaoPresencaEstilo.textoPerguntaPresenca),
-                                const SizedBox(height: 24),
-                                
-                                Row(
-                                  children: [
-                                    Expanded(
-                                      child: OutlinedButton(
-                                        style: ConfirmacaoPresencaEstilo.botaoNaoIrei,
-                                        onPressed: () => _responderConvite(PresencaStatus.refused),
-                                        child: const Text('NÃO IREI', style: ConfirmacaoPresencaEstilo.textoBotaoNaoIrei),
-                                      ),
-                                    ),
-                                    const SizedBox(width: 16),
-                                    Expanded(
-                                      child: ElevatedButton(
-                                        style: ConfirmacaoPresencaEstilo.botaoConfirmar,
-                                        onPressed: () => _responderConvite(PresencaStatus.accepted),
-                                        child: const Text('CONFIRMAR', style: ConfirmacaoPresencaEstilo.textoBotaoConfirmar),
-                                      ),
-                                    ),
-                                  ],
-                                )
-                              ],
-                            ),
-                          )
                       ],
                     ),
                   ),
