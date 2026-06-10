@@ -21,7 +21,7 @@ Este projeto foi desenvolvido como requisito avaliativo para o curso de **Análi
 ## ✨ Funcionalidades Principais
 
 - **☁️ Gestão de Imagens em Nuvem:** Upload de banners customizáveis (ImgBB) com suporte a alinhamento vertical e exclusão automática.
-- **🔒 Segurança Avançada:** Proteção de senhas com *hashing* (`bcrypt`) e fluxo de recuperação via API EmailJS.
+- **🔒 Segurança Avançada:** Proteção de senhas com *hashing* (`bcrypt`) e fluxo de recuperação via Firebase Authentication.
 - **⚡ Tempo Real:** Sincronização instantânea de dados via Firebase Realtime Database.
 - **🌐 Suporte Multiplataforma:** Experiência otimizada para Android, iOS e Web.
 - **👥 Controle Total:** Gestão de convidados com exclusão em cascata.
@@ -33,7 +33,7 @@ O sistema segue padrões rigorosos de engenharia de software:
 
 * **Framework:** Flutter (Dart)
 * **Backend:** Firebase (Realtime Database & Authentication)
-* **APIs de Terceiros:** ImgBB, EmailJS
+* **APIs de Terceiros:** ImgBB
 * **Arquitetura:** Padrão **MVC** (Model-View-Controller) com separação em camadas (`Controllers`, `Services`, `Models`).
 
 ## 📁 Estrutura de Pastas
